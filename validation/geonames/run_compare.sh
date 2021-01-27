@@ -22,7 +22,8 @@ set -e
 CITY_SIZES=(15000 5000 1000 500)
 EXTERNAL_GEONAMES_DIR=${ANDROID_BUILD_TOP}/external/geonames
 SYSTEM_TIMEZONE_DIR=${ANDROID_BUILD_TOP}/system/timezone
-KNOWN_DIFFS_DIR=${SYSTEM_TIMEZONE_DIR}/geolocation/validation/geonames/known_diffs
+GEOTZ_DIR=${ANDROID_BUILD_TOP}/packages/modules/GeoTZ
+KNOWN_DIFFS_DIR=${GEOTZ_DIR}/validation/geonames/known_diffs
 TMP_DIR=$(mktemp -d -t geonames-XXXXXXXXXX)
 COMPARISON_CMD=geotz_geonames_comparison
 
@@ -64,7 +65,7 @@ done
 KNOWN_DIFFS_ARG=$(IFS=,; echo "${KNOWN_DIFF_FILES[*]}")
 
 ${COMPARISON_CMD} \
-  ${SYSTEM_TIMEZONE_DIR}/geolocation/output_data/odbl/tzs2.dat \
+  ${GEOTZ_DIR}/output_data/odbl/tzs2.dat \
   ${SYSTEM_TIMEZONE_DIR}/output_data/android/tzids.prototxt \
   2020-01-01T00:00:00Z \
   ${GEONAMES_CITIES_TXT_FILE} \

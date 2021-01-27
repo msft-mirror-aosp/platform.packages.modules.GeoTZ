@@ -23,11 +23,11 @@ if [ -z ${ANDROID_BUILD_TOP} ]; then
 fi
 
 SYSTEM_TIMEZONE_DIR=$(realpath ${ANDROID_BUILD_TOP}/system/timezone)
-GEOLOCATION_DIR=${SYSTEM_TIMEZONE_DIR}/geolocation
-DATA_PIPELINE_DIR=${GEOLOCATION_DIR}/data_pipeline
-TZBB_DATA_DIR=${GEOLOCATION_DIR}/tzbb_data
+GEOTZ_DIR=$(realpath ${ANDROID_BUILD_TOP}/packages/modules/GeoTZ)
+DATA_PIPELINE_DIR=${GEOTZ_DIR}/data_pipeline
+TZBB_DATA_DIR=${GEOTZ_DIR}/tzbb_data
 WORKING_DIR_ROOT=${DATA_PIPELINE_DIR}/working_dir
-OUTPUT_DATA_DIR=${GEOLOCATION_DIR}/output_data/odbl
+OUTPUT_DATA_DIR=${GEOTZ_DIR}/output_data/odbl
 
 #
 # Hardcoded values that can be changed for debugging / dev to speed things up.
