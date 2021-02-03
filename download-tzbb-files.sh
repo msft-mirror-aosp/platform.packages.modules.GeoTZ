@@ -33,8 +33,6 @@ fi
 
 SCRIPT_PATH=$(realpath $0)
 
-LOCAL_GEOLOCATION_DIR=$(dirname ${SCRIPT_PATH})
-
 # -f = report failures
 # -L = follow redirects
 CURL_CMD="curl -f -L"
@@ -74,7 +72,7 @@ function download() {
 EOF
 }
 
-LOCAL_DATA_DIR=${ANDROID_BUILD_TOP}/system/timezone/geolocation/tzbb_data
+LOCAL_DATA_DIR=${ANDROID_BUILD_TOP}/packages/modules/GeoTZ/tzbb_data
 
 mkdir -p ${LOCAL_DATA_DIR}
 echo Removing existing data files...
