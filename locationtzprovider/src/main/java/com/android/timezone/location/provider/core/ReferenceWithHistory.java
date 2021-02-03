@@ -16,11 +16,14 @@
 
 package com.android.timezone.location.provider.core;
 
+import android.os.SystemClock;
+
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.util.ArrayDeque;
 
 /**
@@ -45,22 +48,21 @@ import java.util.ArrayDeque;
  *
  * <p>This class is not thread-safe.
  *
+ * <p>This code is based on com.android.server.timezonedetector.ReferenceWithHistory.
+ *
  * @param <V> the type of the value
  */
 final class ReferenceWithHistory<V> {
 
-    private static final Object NULL_MARKER = "{null marker}";
-
     /** The maximum number of references to store. */
     private final int mMaxHistorySize;
 
-    /**
-     * The history storage. Note that ArrayDeque doesn't support {@code null} so this stores Object
-     * and not V. Use {@link #packNullIfRequired(Object)} and {@link #unpackNullIfRequired(Object)}
-     * to convert to / from the storage object.
-     */
+    /** The number of times {@link #set(Object)} has been called. */
+    private int mSetCount;
+
+    /** The history storage. */
     @Nullable
-    private ArrayDeque<Object> mValues;
+    private ArrayDeque<TimestampedValue<V>> mValues;
 
     /**
      * Creates an instance that records, at most, the specified number of values.
@@ -78,8 +80,8 @@ final class ReferenceWithHistory<V> {
         if (mValues == null || mValues.isEmpty()) {
             return null;
         }
-        Object value = mValues.getFirst();
-        return unpackNullIfRequired(value);
+        TimestampedValue<V> valueHolder = mValues.getFirst();
+        return valueHolder.getValue();
     }
 
     /**
@@ -98,8 +100,10 @@ final class ReferenceWithHistory<V> {
 
         V previous = get();
 
-        Object nullSafeValue = packNullIfRequired(newValue);
-        mValues.addFirst(nullSafeValue);
+        TimestampedValue<V> valueHolder =
+                new TimestampedValue<>(SystemClock.elapsedRealtime(), newValue);
+        mValues.addFirst(valueHolder);
+        mSetCount++;
         return previous;
     }
 
@@ -110,10 +114,13 @@ final class ReferenceWithHistory<V> {
         if (mValues == null) {
             pw.println("{Empty}");
         } else {
-            int i = 0;
-            for (Object value : mValues) {
-                pw.println(i + ": " + unpackNullIfRequired(value));
-                i++;
+            int i = mSetCount;
+            for (TimestampedValue<V> valueHolder : mValues) {
+                pw.print(--i);
+                pw.print("@");
+                pw.print(Duration.ofMillis(valueHolder.getReferenceTimeMillis()).toString());
+                pw.print(": ");
+                pw.println(valueHolder.getValue());
             }
         }
         pw.flush();
@@ -131,22 +138,24 @@ final class ReferenceWithHistory<V> {
         return String.valueOf(get());
     }
 
-    /**
-     * Turns a non-nullable Object into a nullable value. See also
-     * {@link #packNullIfRequired(Object)}.
-     */
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private V unpackNullIfRequired(@NonNull Object value) {
-        return value == NULL_MARKER ? null : (V) value;
-    }
+    /** A stand-in for android.os.TimestampedValue, which is not in the public or system APIs. */
+    private static class TimestampedValue<V> {
+        @Nullable private final V mValue;
+        private final long mReferenceTimeMillis;
 
-    /**
-     * Turns a nullable value into a non-nullable Object. See also
-     * {@link #unpackNullIfRequired(Object)}.
-     */
-    @NonNull
-    private Object packNullIfRequired(@Nullable V value) {
-        return value == null ? NULL_MARKER : value;
+        TimestampedValue(long referenceTimeMillis, @Nullable V value) {
+            mReferenceTimeMillis = referenceTimeMillis;
+            mValue = value;
+        }
+
+        @Nullable
+        V getValue() {
+            return mValue;
+        }
+
+        @NonNull
+        long getReferenceTimeMillis() {
+            return mReferenceTimeMillis;
+        }
     }
 }
