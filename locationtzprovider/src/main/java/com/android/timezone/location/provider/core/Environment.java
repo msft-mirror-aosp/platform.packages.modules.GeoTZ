@@ -42,6 +42,12 @@ import java.util.function.Consumer;
 public interface Environment {
 
     /**
+     * Returns the {@link LocationListeningAccountant}. Callers may safely retain a reference.
+     */
+    @NonNull
+    LocationListeningAccountant getLocationListeningAccountant();
+
+    /**
      * Requests a callback to {@code callback} with {@code callbackToken} after at least
      * {@code delayMillis}. An object is returned that can be used to cancel the callback later.
      */

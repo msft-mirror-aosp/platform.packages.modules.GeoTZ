@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.timezone.location.provider.core;
+package com.android.timezone.location.provider;
 
 import static com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.LOCATION_LISTEN_MODE_ACTIVE;
 import static com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.LOCATION_LISTEN_MODE_PASSIVE;
@@ -23,18 +23,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.timezone.location.provider.core.Environment.LocationListeningResult;
+import com.android.timezone.location.provider.core.LocationListeningAccountant;
 
 import java.time.Duration;
 import java.util.Objects;
 
 /**
- * The real implementation of {@link LocationListeningAccountant}.
+ * A real implementation of {@link LocationListeningAccountant}.
+ *
+ * <p> A newly created instance starts with an active listening balance of zero. An instance holds
+ * the current active listening balance in memory (i.e. it is cleared if the device reboots or if
+ * the process is stopped).
  */
-final class LocationListeningAccountantImpl implements LocationListeningAccountant {
+final class RealLocationListeningAccountant implements LocationListeningAccountant {
 
     /**
-     * An amount added to passive listening times when accruing active time to ensure enough active
-     * time will be accrued even if there is some measurement error.
+     * An amount added to passive listening durations when accruing active time to ensure enough
+     * active time will be accrued even if there is some measurement error.
      */
     private static final Duration ACCRUAL_INCREMENT = Duration.ofMinutes(1);
 
@@ -67,7 +72,7 @@ final class LocationListeningAccountantImpl implements LocationListeningAccounta
      * @param passiveToActiveRatio the amount of passive listening before a unit of active listening
      *        is accrued
      */
-    LocationListeningAccountantImpl(
+    RealLocationListeningAccountant(
             @NonNull Duration minPassiveListeningDuration,
             @NonNull Duration maxActiveListeningBalance,
             @NonNull Duration minActiveListeningDuration,
@@ -163,6 +168,14 @@ final class LocationListeningAccountantImpl implements LocationListeningAccounta
 
             return new ListeningInstruction(LOCATION_LISTEN_MODE_PASSIVE, passiveModeDuration);
         }
+    }
+
+    @Override
+    @NonNull
+    public synchronized Duration withdrawActiveListeningBalance() {
+        long toReturn = mActiveListeningBalanceMillis;
+        mActiveListeningBalanceMillis = 0;
+        return Duration.ofMillis(toReturn);
     }
 
     @NonNull
