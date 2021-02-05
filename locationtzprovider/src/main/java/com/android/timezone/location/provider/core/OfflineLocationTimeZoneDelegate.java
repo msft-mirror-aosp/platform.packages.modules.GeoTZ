@@ -57,7 +57,8 @@ import java.util.Objects;
  * <p>Implementation details:
  *
  * <p>The instance interacts with multiple threads, but state changes occur in a single-threaded
- * manner through the use of a lock object, {@link #mLock}.
+ * manner through the use of a lock object, {@link #mLock}, obtained from {@link
+ * Environment#getSharedLockObject()}.
  *
  * <p>There are two listening modes:
  * <ul>
@@ -107,42 +108,13 @@ public final class OfflineLocationTimeZoneDelegate {
     @ListenModeEnum
     public static final int LOCATION_LISTEN_MODE_PASSIVE = 2;
 
-    /**
-     * The ratio of how much time must part to accue a unit of active listening time.
-     *
-     * <p>Value detail: For every hour spent passive listening, 40 seconds of active
-     * listening are allowed, i.e. 90 passive time units : 1 active time units.
-     */
-    private static final long PASSIVE_TO_ACTIVE_RATIO = (60 * 60) / 40;
-
-    /** The minimum time to spend in passive listening. */
-    private static final Duration MINIMUM_PASSIVE_LISTENING_DURATION = Duration.ofMinutes(2);
-
-    /** The age before a "location not known" result is considered too stale to use. */
-    private static final Duration LOCATION_NOT_KNOWN_AGE_THRESHOLD = Duration.ofMinutes(1);
-
-    /** The age before a "location known" result is considered too stale to use. */
-    private static final Duration LOCATION_KNOWN_AGE_THRESHOLD = Duration.ofMinutes(15);
-
-    /** The shortest active listening time allowed. */
-    private static final Duration MINIMUM_ACTIVE_LISTENING_DURATION = Duration.ofSeconds(5);
-
-    /** The maximum time to stay active listening in one go. */
-    private static final Duration MAXIMUM_ACTIVE_LISTENING_DURATION = Duration.ofSeconds(10);
-
-    /** The amount of active listening budget the instance starts with. */
-    private static final Duration INITIAL_ACTIVE_LISTENING_BUDGET =
-            MINIMUM_ACTIVE_LISTENING_DURATION;
-
-    /** The cap on the amount of active listening that can be accrued. */
-    private static final Duration MAX_ACTIVE_LISTENING_BUDGET =
-            MAXIMUM_ACTIVE_LISTENING_DURATION.multipliedBy(4);
-
     @NonNull
     private final Environment mEnvironment;
-    private final Object mLock = new Object();
+
     @NonNull
     private final LocationListeningAccountant mLocationListeningAccountant;
+
+    private final Object mLock = new Object();
 
     /** The current mode of the provider. See {@link Mode} for details. */
     @GuardedBy("mLock")
@@ -186,25 +158,13 @@ public final class OfflineLocationTimeZoneDelegate {
 
     @NonNull
     public static OfflineLocationTimeZoneDelegate create(@NonNull Environment environment) {
-        LocationListeningAccountantImpl locationListeningAccountant =
-                new LocationListeningAccountantImpl(
-                        MINIMUM_PASSIVE_LISTENING_DURATION, MAX_ACTIVE_LISTENING_BUDGET,
-                        MINIMUM_ACTIVE_LISTENING_DURATION, MAXIMUM_ACTIVE_LISTENING_DURATION,
-                        LOCATION_NOT_KNOWN_AGE_THRESHOLD, LOCATION_KNOWN_AGE_THRESHOLD,
-                        PASSIVE_TO_ACTIVE_RATIO);
-        // Start with a non-zero budget for active listening so we start with a period of active
-        // listening. This will be reset each time a provider is created.
-        locationListeningAccountant.depositActiveListeningAmount(INITIAL_ACTIVE_LISTENING_BUDGET);
-
-        return new OfflineLocationTimeZoneDelegate(environment, locationListeningAccountant);
+        return new OfflineLocationTimeZoneDelegate(environment);
     }
 
     // @VisibleForTesting
-    OfflineLocationTimeZoneDelegate(
-            @NonNull Environment environment,
-            @NonNull LocationListeningAccountant locationListeningAccountant) {
+    OfflineLocationTimeZoneDelegate(@NonNull Environment environment) {
         mEnvironment = Objects.requireNonNull(environment);
-        mLocationListeningAccountant = Objects.requireNonNull(locationListeningAccountant);
+        mLocationListeningAccountant = environment.getLocationListeningAccountant();
 
         synchronized (mLock) {
             mCurrentMode.set(Mode.createStoppedMode());
@@ -310,7 +270,7 @@ public final class OfflineLocationTimeZoneDelegate {
 
             // State and constants.
             pw.println("mInitializationTimeoutCancellable=" + mInitializationTimeoutCancellable);
-            pw.println("mActiveListeningAccountant=" + mLocationListeningAccountant);
+            pw.println("mLocationListeningAccountant=" + mLocationListeningAccountant);
             pw.println("mLastLocationToken=" + mLastLocationToken);
             pw.println();
             pw.println("Mode history:");

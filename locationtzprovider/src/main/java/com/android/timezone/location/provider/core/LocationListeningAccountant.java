@@ -49,11 +49,8 @@ import java.util.Objects;
  * #depositActiveListeningAmount(Duration)} (e.g. to return previously allocated but unused
  * active listening time), or indirectly via {@link #accrueActiveListeningBudget(Duration)}, which
  * is called to record time elapsed while <em>not</em> active listening.
- *
- * <p>An instance holds the balance of active listening in memory (i.e. it is cleared if the device
- * reboots or if the process is stopped).
  */
-interface LocationListeningAccountant {
+public interface LocationListeningAccountant {
 
     /**
      * Deposit an amount of active listening. Used when budget previously allocated with
@@ -115,4 +112,11 @@ interface LocationListeningAccountant {
     @NonNull
     ListeningInstruction getNextListeningInstruction(long elapsedRealtimeMillis,
             @Nullable LocationListeningResult lastLocationListeningResult);
+
+    /**
+     * Withdraws the current active listening balance, leaving it at zero. Used when transferring
+     * budget from one accountant to another.
+     */
+    @NonNull
+    Duration withdrawActiveListeningBalance();
 }
