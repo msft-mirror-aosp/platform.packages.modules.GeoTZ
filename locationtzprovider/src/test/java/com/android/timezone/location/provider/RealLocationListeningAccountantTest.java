@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.timezone.location.provider.core;
+package com.android.timezone.location.provider;
 
 import static com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.LOCATION_LISTEN_MODE_ACTIVE;
 import static com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.LOCATION_LISTEN_MODE_PASSIVE;
@@ -33,8 +33,8 @@ import org.junit.Test;
 
 import java.time.Duration;
 
-/** Unit tests for {@link LocationListeningAccountantImpl}. */
-public class LocationListeningAccountantImplTest {
+/** Unit tests for {@link RealLocationListeningAccountant}. */
+public class RealLocationListeningAccountantTest {
 
     private static final Duration MAX_ACTIVE_LISTENING_BALANCE = seconds(500);
     private static final Duration MIN_PASSIVE_LISTENING_DURATION = seconds(3);
@@ -48,12 +48,12 @@ public class LocationListeningAccountantImplTest {
     private static final long ARBITRARY_ELAPSED_REALTIME_MILLIS = 54321;
     private static final Duration ARBITRARY_LISTENING_DURATION = seconds(5);
 
-    private LocationListeningAccountantImpl mAccountant;
+    private RealLocationListeningAccountant mAccountant;
 
 
     @Before
     public void setUp() {
-        mAccountant = new LocationListeningAccountantImpl(
+        mAccountant = new RealLocationListeningAccountant(
                 MIN_PASSIVE_LISTENING_DURATION, MAX_ACTIVE_LISTENING_BALANCE,
                 MIN_ACTIVE_LISTENING_DURATION, MAX_ACTIVE_LISTENING_DURATION,
                 LOCATION_NOT_KNOWN_AGE_THRESHOLD, LOCATION_KNOWN_AGE_THRESHOLD,
