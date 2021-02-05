@@ -66,9 +66,8 @@ public class OfflineLocationTimeZoneDelegateTest {
     public void setUp() {
         mTestEnvironment = new FakeEnvironment();
         mTestGeoTimeZoneFinder = mTestEnvironment.mFakeGeoTimeZonesFinder;
-        mTestLocationListeningAccountant = new FakeLocationListeningAccountant();
-        mDelegate = new OfflineLocationTimeZoneDelegate(
-                mTestEnvironment, mTestLocationListeningAccountant);
+        mTestLocationListeningAccountant = mTestEnvironment.mLocationListeningAccountant;
+        mDelegate = new OfflineLocationTimeZoneDelegate(mTestEnvironment);
     }
 
     @Test
@@ -183,11 +182,20 @@ public class OfflineLocationTimeZoneDelegateTest {
     private static class FakeEnvironment implements Environment {
 
         private final FakeGeoTimeZonesFinder mFakeGeoTimeZonesFinder = new FakeGeoTimeZonesFinder();
+        private final FakeLocationListeningAccountant mLocationListeningAccountant =
+                new FakeLocationListeningAccountant();
+
         private long mElapsedRealtimeMillis;
         private PassiveLocationListenerState mPassiveLocationListeningState;
         private ActiveLocationListenerState mActiveLocationListeningState;
         private final List<TestTimeoutState<?>> mTimeouts = new ArrayList<>();
         private TimeZoneProviderResult mLastResultReported;
+
+        @NonNull
+        @Override
+        public LocationListeningAccountant getLocationListeningAccountant() {
+            return mLocationListeningAccountant;
+        }
 
         @NonNull
         @Override
@@ -226,7 +234,7 @@ public class OfflineLocationTimeZoneDelegateTest {
 
         @NonNull
         @Override
-        public FakeGeoTimeZonesFinder createGeoTimeZoneFinder() throws IOException {
+        public GeoTimeZonesFinder createGeoTimeZoneFinder() throws IOException {
             return mFakeGeoTimeZonesFinder;
         }
 
@@ -562,6 +570,13 @@ public class OfflineLocationTimeZoneDelegateTest {
         public ListeningInstruction getNextListeningInstruction(long elapsedRealtimeMillis,
                 @Nullable LocationListeningResult lastLocationListeningResult) {
             return mListeningInstructions.removeFirst();
+        }
+
+        @Override
+        @NonNull
+        public Duration withdrawActiveListeningBalance() {
+            // Not implemented for tests.
+            throw new UnsupportedOperationException();
         }
 
         FakeLocationListeningAccountant addInstruction(ListeningInstruction listeningInstruction) {
