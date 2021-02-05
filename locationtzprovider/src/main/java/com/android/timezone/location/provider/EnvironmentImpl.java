@@ -34,13 +34,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.DeviceConfig;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.timezone.location.lookup.GeoTimeZonesFinder;
 import com.android.timezone.location.provider.core.Cancellable;
 import com.android.timezone.location.provider.core.Environment;
-import com.android.timezone.location.lookup.GeoTimeZonesFinder;
+import com.android.timezone.location.provider.core.LocationListeningAccountant;
 import com.android.timezone.location.provider.core.TimeZoneProviderResult;
 
 import java.io.File;
@@ -58,24 +60,80 @@ import java.util.function.Consumer;
  */
 class EnvironmentImpl implements Environment {
 
-    private static final String RESOURCE_CONFIG_PROPERTIES = "offlineltzprovider.properties";
-    private static final String CONFIG_KEY_GEODATA_PATH = "geodata.path";
+    private static final String RESOURCE_CONFIG_PROPERTIES_NAME = "offlineltzprovider.properties";
+
+    /**
+     * The config properties key to get the location of the tzs2.dat file to use for time zone
+     * boundaries.
+     */
+    private static final String RESOURCE_CONFIG_KEY_GEODATA_PATH = "geodata.path";
+
+    /**
+     * The config properties key for the namespace to pass to {@link android.provider.DeviceConfig}
+     * for server-pushed configuration.
+     */
+    private static final String RESOURCE_CONFIG_KEY_DEVICE_CONFIG_NAMESPACE =
+            "deviceconfig.namespace";
+
+    /**
+     * The config properties key for the prefix that should be applied to keys passed to
+     * {@link android.provider.DeviceConfig}.
+     */
+    private static final String RESOURCE_CONFIG_KEY_DEVICE_CONFIG_KEY_PREFIX =
+            "deviceconfig.key_prefix";
 
     /** An arbitrary value larger than the largest time we might want to hold a wake lock. */
     private static final long WAKELOCK_ACQUIRE_MILLIS = Duration.ofMinutes(1).toMillis();
 
-    @NonNull
-    private final LocationManager mLocationManager;
-    @NonNull
-    private final Handler mHandler;
-    @NonNull
-    private final Consumer<TimeZoneProviderResult> mResultConsumer;
-    @NonNull
-    private final HandlerExecutor mExecutor;
-    @NonNull
-    private final File mGeoDataFile;
-    @NonNull
-    private final PowerManager.WakeLock mWakeLock;
+    /**
+     * For every hour spent passive listening, 40 seconds of active listening are allowed, i.e.
+     * 90 passive time units : 1 active time units.
+     */
+    private static final long DEFAULT_PASSIVE_TO_ACTIVE_RATIO = (60 * 60) / 40;
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_PASSIVE_TO_ACTIVE_RATIO =
+            "passive_to_active_ratio";
+
+    private static final Duration DEFAULT_MINIMUM_PASSIVE_LISTENING_DURATION =
+            Duration.ofMinutes(2);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_MINIMUM_PASSIVE_LISTENING_DURATION_MILLIS =
+            "min_passive_listening_duration_millis";
+
+    private static final Duration DEFAULT_LOCATION_NOT_KNOWN_AGE_THRESHOLD = Duration.ofMinutes(1);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_LOCATION_NOT_KNOWN_AGE_THRESHOLD_MILLIS =
+            "location_not_known_age_threshold_millis";
+
+    private static final Duration DEFAULT_LOCATION_KNOWN_AGE_THRESHOLD = Duration.ofMinutes(15);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_LOCATION_KNOWN_AGE_THRESHOLD_MILLIS =
+            "location_known_age_threshold_millis";
+
+    private static final Duration DEFAULT_MINIMUM_ACTIVE_LISTENING_DURATION = Duration.ofSeconds(5);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_MINIMUM_ACTIVE_LISTENING_DURATION_MILLIS =
+            "min_active_listening_duration_millis";
+
+    private static final Duration DEFAULT_MAXIMUM_ACTIVE_LISTENING_DURATION =
+            Duration.ofSeconds(10);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_MAXIMUM_ACTIVE_LISTENING_DURATION_MILLIS =
+            "max_active_listening_duration_millis";
+
+    private static final Duration DEFAULT_INITIAL_ACTIVE_LISTENING_BUDGET =
+            DEFAULT_MINIMUM_ACTIVE_LISTENING_DURATION;
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_INITIAL_ACTIVE_LISTENING_BUDGET_MILLIS =
+            "min_initial_active_listening_budget_millis";
+
+    private static final Duration DEFAULT_MAX_ACTIVE_LISTENING_BUDGET =
+            DEFAULT_MAXIMUM_ACTIVE_LISTENING_DURATION.multipliedBy(4);
+    private static final String DEVICE_CONFIG_KEY_SUFFIX_MAX_ACTIVE_LISTENING_BUDGET_MILLIS =
+            "max_active_listening_budget_millis";
+
+    @NonNull private final LocationManager mLocationManager;
+    @NonNull private final Handler mHandler;
+    @NonNull private final Consumer<TimeZoneProviderResult> mResultConsumer;
+    @NonNull private final HandlerExecutor mExecutor;
+    @NonNull private final File mGeoDataFile;
+    @NonNull private final PowerManager.WakeLock mWakeLock;
+    @NonNull private final String mDeviceConfigNamespace;
+    @NonNull private final String mDeviceConfigKeyPrefix;
+    @NonNull private final DelegatingLocationListeningAccountant mLocationListeningAccountant;
 
     EnvironmentImpl(@NonNull Context context,
             @NonNull Consumer<TimeZoneProviderResult> resultConsumer) {
@@ -89,23 +147,82 @@ class EnvironmentImpl implements Environment {
         mExecutor = new HandlerExecutor(mHandler);
 
         Properties configProperties = loadConfigProperties(getClass().getClassLoader());
-        mGeoDataFile = new File(configProperties.getProperty(CONFIG_KEY_GEODATA_PATH));
+        mGeoDataFile = new File(configProperties.getProperty(RESOURCE_CONFIG_KEY_GEODATA_PATH));
+        mDeviceConfigNamespace = Objects.requireNonNull(
+                configProperties.getProperty(RESOURCE_CONFIG_KEY_DEVICE_CONFIG_NAMESPACE));
+        mDeviceConfigKeyPrefix = Objects.requireNonNull(
+                configProperties.getProperty(RESOURCE_CONFIG_KEY_DEVICE_CONFIG_KEY_PREFIX));
+
+        LocationListeningAccountant realLocationListeningAccountant =
+                createRealLocationListeningAccountant();
+        mLocationListeningAccountant =
+                new DelegatingLocationListeningAccountant(realLocationListeningAccountant);
+
+        Duration initialActiveListeningBudget = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_INITIAL_ACTIVE_LISTENING_BUDGET_MILLIS,
+                DEFAULT_INITIAL_ACTIVE_LISTENING_BUDGET);
+        mLocationListeningAccountant.depositActiveListeningAmount(initialActiveListeningBudget);
+
+        // Monitor for changes that affect the accountant's configuration.
+        DeviceConfig.addOnPropertiesChangedListener(
+                mDeviceConfigNamespace, mExecutor, this::handleDeviceConfigChanged);
     }
 
     private static Properties loadConfigProperties(ClassLoader classLoader) {
         Properties configProperties = new Properties();
         try (InputStream configStream =
-                classLoader.getResourceAsStream(RESOURCE_CONFIG_PROPERTIES)) {
+                classLoader.getResourceAsStream(RESOURCE_CONFIG_PROPERTIES_NAME)) {
             if (configStream == null) {
                 throw new IllegalStateException("Unable to find config properties"
-                        + " resource=" + RESOURCE_CONFIG_PROPERTIES);
+                        + " resource=" + RESOURCE_CONFIG_PROPERTIES_NAME);
             }
             configProperties.load(configStream);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load config properties from"
-                    + " resource=" + RESOURCE_CONFIG_PROPERTIES, e);
+                    + " resource=" + RESOURCE_CONFIG_PROPERTIES_NAME, e);
         }
         return configProperties;
+    }
+
+    private void handleDeviceConfigChanged(@NonNull DeviceConfig.Properties properties) {
+        LocationListeningAccountant newAccountant = createRealLocationListeningAccountant();
+        mLocationListeningAccountant.replaceDelegate(newAccountant);
+    }
+
+    @NonNull
+    private LocationListeningAccountant createRealLocationListeningAccountant() {
+        Duration minPassiveListeningDuration = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_MINIMUM_PASSIVE_LISTENING_DURATION_MILLIS,
+                DEFAULT_MINIMUM_PASSIVE_LISTENING_DURATION);
+        Duration maxActiveListeningBalance = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_MAX_ACTIVE_LISTENING_BUDGET_MILLIS,
+                DEFAULT_MAX_ACTIVE_LISTENING_BUDGET);
+        Duration minActiveListeningDuration = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_MINIMUM_ACTIVE_LISTENING_DURATION_MILLIS,
+                DEFAULT_MINIMUM_ACTIVE_LISTENING_DURATION);
+        Duration maxActiveListeningDuration = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_MAXIMUM_ACTIVE_LISTENING_DURATION_MILLIS,
+                DEFAULT_MAXIMUM_ACTIVE_LISTENING_DURATION);
+        Duration locationNotKnownAgeThreshold = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_LOCATION_NOT_KNOWN_AGE_THRESHOLD_MILLIS,
+                DEFAULT_LOCATION_NOT_KNOWN_AGE_THRESHOLD);
+        Duration locationKnownAgeThreshold = getDeviceConfigDuration(
+                DEVICE_CONFIG_KEY_SUFFIX_LOCATION_KNOWN_AGE_THRESHOLD_MILLIS,
+                DEFAULT_LOCATION_KNOWN_AGE_THRESHOLD);
+        long passiveToActiveRatio = getDeviceConfigLong(
+                DEVICE_CONFIG_KEY_SUFFIX_PASSIVE_TO_ACTIVE_RATIO,
+                DEFAULT_PASSIVE_TO_ACTIVE_RATIO);
+        return new RealLocationListeningAccountant(
+                minPassiveListeningDuration, maxActiveListeningBalance,
+                minActiveListeningDuration, maxActiveListeningDuration,
+                locationNotKnownAgeThreshold, locationKnownAgeThreshold,
+                passiveToActiveRatio);
+    }
+
+    @Override
+    @NonNull
+    public LocationListeningAccountant getLocationListeningAccountant() {
+        return mLocationListeningAccountant;
     }
 
     @Override
@@ -292,6 +409,22 @@ class EnvironmentImpl implements Environment {
         return SystemClock.elapsedRealtime();
     }
 
+    @NonNull
+    private Duration getDeviceConfigDuration(@NonNull String key, @NonNull Duration defaultValue) {
+        Objects.requireNonNull(defaultValue);
+
+        long deviceConfigValue = getDeviceConfigLong(key, -1);
+        if (deviceConfigValue < 0) {
+            return defaultValue;
+        }
+        return Duration.ofMillis(deviceConfigValue);
+    }
+
+    private long getDeviceConfigLong(@NonNull String keySuffix, long defaultValue) {
+        String key = mDeviceConfigKeyPrefix + keySuffix;
+        return DeviceConfig.getLong(mDeviceConfigNamespace, key, defaultValue);
+    }
+
     private static class HandlerExecutor implements Executor {
         private final Handler mHandler;
 
@@ -332,6 +465,5 @@ class EnvironmentImpl implements Environment {
                     + ", mCancelled=" + mCancelled
                     + '}';
         }
-
     }
 }
