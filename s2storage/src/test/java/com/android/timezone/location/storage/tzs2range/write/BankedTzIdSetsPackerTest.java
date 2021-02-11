@@ -17,9 +17,10 @@
 package com.android.timezone.location.storage.tzs2range.write;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
 import static com.android.timezone.location.storage.testing.TestSupport.setOf;
+
 import static org.junit.Assert.assertEquals;
 
 import com.android.timezone.location.storage.tzs2range.BankedTzIdSets;
@@ -79,8 +80,7 @@ public class BankedTzIdSetsPackerTest {
         BankedTzIdSetsPacker.BankHelper bank1_1Helper = packer.addTzIdSets(idSet1_1);
         assertEquals(0, bank1_1Helper.getId());
 
-        List<List<String>> idSet1_2 = listOf(
-                listOf("One", "Two", "Three", "Four", "Five"));
+        List<List<String>> idSet1_2 = listOf(listOf("One", "Two", "Three", "Four", "Five"));
         BankedTzIdSetsPacker.BankHelper bank1_2Helper = packer.addTzIdSets(idSet1_2);
         assertEquals(0, bank1_2Helper.getId());
 
@@ -90,8 +90,7 @@ public class BankedTzIdSetsPackerTest {
         BankedTzIdSetsPacker.BankHelper bank1_2Helper2 = packer.addTzIdSets(idSet1_2);
         assertEquals(0, bank1_2Helper2.getId());
 
-        List<List<String>> idSet2 = listOf(
-                listOf("Two"));
+        List<List<String>> idSet2 = listOf(listOf("Two"));
         BankedTzIdSetsPacker.BankHelper bank2Helper = packer.addTzIdSets(idSet2);
         assertEquals(1, bank2Helper.getId());
     }
@@ -105,20 +104,20 @@ public class BankedTzIdSetsPackerTest {
                 listOf("One", "Two"),
                 listOf("One", "Two", "Three"),
                 listOf("One", "Two", "Three", "Four"));
-        assertThrowsIllegalArgumentException(() -> packer.addTzIdSets(idSet1_1));
+        assertThrows(IllegalArgumentException.class, () -> packer.addTzIdSets(idSet1_1));
     }
 
     @Test
     public void extractUniqueTzIdSets() {
-        List<TzS2Range> ranges = listOf(
-                new TzS2Range(cellId(12, 1, 1), cellId(12, 1, 2), listOf("One", "Two", "Three")),
+        List<TzS2Range> ranges = listOf(new TzS2Range(cellId(12, 1, 1), cellId(12, 1, 2),
+                        listOf("One", "Two", "Three")),
                 new TzS2Range(cellId(12, 1, 2), cellId(12, 1, 3), listOf("One")),
                 new TzS2Range(cellId(12, 1, 3), cellId(12, 1, 4), listOf("Two")),
                 new TzS2Range(cellId(12, 1, 4), cellId(12, 1, 5), listOf("One")),
-                new TzS2Range(cellId(12, 1, 5), cellId(12, 1, 6), listOf("One", "Two", "Three")),
+                new TzS2Range(cellId(12, 1, 5), cellId(12, 1, 6),
+                        listOf("One", "Two", "Three")),
                 new TzS2Range(cellId(12, 1, 6), cellId(12, 1, 7), listOf("Two", "Three")),
-                new TzS2Range(cellId(12, 1, 7), cellId(12, 1, 8), listOf("Three"))
-        );
+                new TzS2Range(cellId(12, 1, 7), cellId(12, 1, 8), listOf("Three")));
         List<List<String>> uniqueTzIdSetsList = BankedTzIdSetsPacker.extractUniqueTzIdSets(ranges);
         Set<List<String>> uniqueTzIdSetsSet = new HashSet<>(uniqueTzIdSetsList);
         assertEquals(uniqueTzIdSetsList.size(), uniqueTzIdSetsSet.size());
