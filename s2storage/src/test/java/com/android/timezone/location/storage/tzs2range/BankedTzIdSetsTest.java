@@ -16,8 +16,9 @@
 
 package com.android.timezone.location.storage.tzs2range;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIndexOutOfBoundsException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class BankedTzIdSetsTest {
         assertEquals(2, bankedTzIdSets.getBankCount());
         assertEquals(stringsByIndex, bankedTzIdSets.getStringsByIndex());
 
-        assertThrowsIndexOutOfBoundsException(() -> bankedTzIdSets.getBank(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> bankedTzIdSets.getBank(-1));
 
         BankedTzIdSets.Bank bank1 = bankedTzIdSets.getBank(0);
         assertEquals(3, bank1.getTzIdSetCount());
@@ -70,6 +71,6 @@ public class BankedTzIdSetsTest {
         assertEquals(listOf("Two", "Three", "Four", "Five"), bank2.getTzIdSet(3).getTzIds());
         assertEquals(listOf(1, 2, 3, 4), bank2.getTzIdSet(3).getStringIds());
 
-        assertThrowsIndexOutOfBoundsException(() -> bankedTzIdSets.getBank(2));
+        assertThrows(IndexOutOfBoundsException.class, () -> bankedTzIdSets.getBank(2));
     }
 }

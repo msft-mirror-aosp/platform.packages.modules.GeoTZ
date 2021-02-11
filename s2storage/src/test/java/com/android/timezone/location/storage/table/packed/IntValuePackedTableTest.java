@@ -16,9 +16,9 @@
 
 package com.android.timezone.location.storage.table.packed;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIndexOutOfBoundsException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 import static com.android.timezone.location.storage.testing.TestSupport.setOf;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -63,8 +63,10 @@ public class IntValuePackedTableTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         boolean signedValue = false;
         try (PackedTableWriter writer = PackedTableWriter.create(baos, 5, 9, signedValue, null)) {
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(1, maxUnsignedInt + 1));
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(1, minUnsignedInt - 1));
+            assertThrows(IllegalArgumentException.class,
+                    () -> writer.addEntry(1, maxUnsignedInt + 1));
+            assertThrows(IllegalArgumentException.class,
+                    () -> writer.addEntry(1, minUnsignedInt - 1));
             writer.addEntry(1, maxUnsignedInt);
             writer.addEntry(2, minUnsignedInt);
         }
@@ -84,8 +86,10 @@ public class IntValuePackedTableTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         boolean signedValue = true;
         try (PackedTableWriter writer = PackedTableWriter.create(baos, 5, 8, signedValue, null)) {
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(1, maxSignedInt + 1));
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(1, minSignedInt - 1));
+            assertThrows(IllegalArgumentException.class,
+                    () -> writer.addEntry(1, maxSignedInt + 1));
+            assertThrows(IllegalArgumentException.class,
+                    () -> writer.addEntry(1, minSignedInt - 1));
             writer.addEntry(1, maxSignedInt);
             writer.addEntry(2, minSignedInt);
         }
@@ -105,8 +109,8 @@ public class IntValuePackedTableTest {
         boolean signedValue = true;
         try (PackedTableWriter writer = PackedTableWriter.create(baos, 5, 8, signedValue, null)) {
             writer.addEntry(100, 1);
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(1, 2));
-            assertThrowsIllegalArgumentException(() -> writer.addEntry(99, 2));
+            assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, 2));
+            assertThrows(IllegalArgumentException.class, () -> writer.addEntry(99, 2));
             writer.addEntry(100, 2);
             writer.addEntry(101, 3);
         }
@@ -168,8 +172,9 @@ public class IntValuePackedTableTest {
         assertEquals(1234, intValuePackedTable.getEntryByIndex(0).getValue());
         assertEquals(2345, intValuePackedTable.getEntryByIndex(1).getValue());
         assertEquals(3456, intValuePackedTable.getEntryByIndex(2).getValue());
-        assertThrowsIndexOutOfBoundsException(() -> intValuePackedTable.getEntryByIndex(-1));
-        assertThrowsIndexOutOfBoundsException(() -> intValuePackedTable.getEntryByIndex(3));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> intValuePackedTable.getEntryByIndex(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> intValuePackedTable.getEntryByIndex(3));
         assertNull(intValuePackedTable.getEntry(0));
         assertNull(intValuePackedTable.getEntry(4));
     }
@@ -220,10 +225,11 @@ public class IntValuePackedTableTest {
         assertArrayEquals(new byte[0], intValuePackedTable.getSharedData());
 
         int negativeKey = -1;
-        assertThrowsIllegalArgumentException(() -> intValuePackedTable.getEntry(negativeKey));
+        assertThrows(IllegalArgumentException.class,
+                () -> intValuePackedTable.getEntry(negativeKey));
 
         int keyTooBig = (int) BitwiseUtils.maxUnsignedValue(keyBits) + 1;
-        assertThrowsIllegalArgumentException(() -> intValuePackedTable.getEntry(keyTooBig));
+        assertThrows(IllegalArgumentException.class, () -> intValuePackedTable.getEntry(keyTooBig));
     }
 
     @Test
