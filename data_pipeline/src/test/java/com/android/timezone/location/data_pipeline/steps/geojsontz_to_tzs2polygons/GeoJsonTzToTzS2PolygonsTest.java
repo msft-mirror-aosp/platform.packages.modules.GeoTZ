@@ -69,9 +69,9 @@ public final class GeoJsonTzToTzS2PolygonsTest {
         Path outputDirPath = mTempDirPath.resolve("output");
 
         String[] args = {
-                inputFilePath.toAbsolutePath().toString(),
-                Integer.toString(threads),
-                outputDirPath.toAbsolutePath().toString()
+                "--geo-json", inputFilePath.toAbsolutePath().toString(),
+                "--num-threads", Integer.toString(threads),
+                "--output", outputDirPath.toAbsolutePath().toString()
         };
         GeoJsonTzToTzS2Polygons.main(args);
 

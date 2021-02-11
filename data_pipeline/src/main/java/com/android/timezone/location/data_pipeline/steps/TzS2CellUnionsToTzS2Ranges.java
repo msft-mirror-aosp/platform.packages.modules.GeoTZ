@@ -25,6 +25,9 @@ import com.android.timezone.location.data_pipeline.steps.Types.TzS2Range;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Ranges;
 import com.android.timezone.location.data_pipeline.util.NamedFuture;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
 import com.google.common.base.Stopwatch;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2CellUnion;
@@ -72,23 +75,45 @@ public final class TzS2CellUnionsToTzS2Ranges {
         this.mProtoStorageFormat = Objects.requireNonNull(protoStorageFormat);
     }
 
+    private static class Arguments {
+        @Parameter(names = "--input",
+                description = "The input directory containing the TzS2CellUnion files",
+                required = true,
+                converter = FileConverter.class)
+        File inputDir;
+
+        @Parameter(names = "--num-threads",
+                description = "The number of threads to use",
+                required = true)
+        int numThreads;
+
+        @Parameter(names = "--output",
+                description = "The output directory to store the TzS2Ranges files",
+                required = true,
+                converter = FileConverter.class)
+        File outputDir;
+
+        @Parameter(names = "--s2-level",
+                description = "The S2 level of the ranges to produce. The TzS2CellUnion must not "
+                        + "contain S2 Cell IDs with a higher level than this",
+                required = true)
+        int s2Level;
+
+    }
+
     /**
      * See {@link TzS2CellUnionsToTzS2Ranges} for the purpose of this class.
-     *
-     * <p>Arguments:
-     * <ol>
-     *     <li>The input directory containing the {@link TzS2CellUnion} files.</li>
-     *     <li>The number of threads to use</li>
-     *     <li>The output directory to store the {@link TzS2Ranges} files.</li>
-     *     <li>The S2 level of the ranges to produce. The {@link TzS2CellUnion} must not contain S2
-     *     Cell IDs with a higher level than this.</li>
-     * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputDir = new File(args[0]);
-        int threads = Integer.parseInt(args[1]);
-        File outputDir = new File(args[2]);
-        int s2Level = Integer.parseInt(args[3]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+        File inputDir = arguments.inputDir;
+        int threads = arguments.numThreads;
+        File outputDir = arguments.outputDir;
+        int s2Level = arguments.s2Level;
         ProtoStorageFormat protoStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
         outputDir.mkdirs();
