@@ -77,10 +77,11 @@ public final class CanonicalizeTzS2PolygonsTest {
         Files.createDirectory(outputDirPath);
 
         String[] args = {
-                inputPolysDirPath.toAbsolutePath().toString(),
-                tzIdsFile.toAbsolutePath().toString(),
+                "--input", inputPolysDirPath.toAbsolutePath().toString(),
+                "--tz-ids", tzIdsFile.toAbsolutePath().toString(),
+                "--replacement-threshold",
                 LocalDateTime.of(2020, 1, 1, 0, 0, 0).toInstant(UTC).toString(),
-                outputDirPath.toAbsolutePath().toString()
+                "--output", outputDirPath.toAbsolutePath().toString()
         };
         CanonicalizeTzS2Polygons.main(args);
 

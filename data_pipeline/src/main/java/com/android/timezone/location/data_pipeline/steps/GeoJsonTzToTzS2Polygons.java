@@ -16,17 +16,23 @@
 
 package com.android.timezone.location.data_pipeline.steps;
 
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
 import com.android.timezone.location.common.LicenseSupport;
 import com.android.timezone.location.common.LicenseSupport.License;
 import com.android.timezone.location.data_pipeline.steps.Types.ProtoStorageFormat;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Polygons;
 import com.android.timezone.location.data_pipeline.util.NamedFuture;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.geometry.S2LatLng;
 import com.google.common.geometry.S2Loop;
 import com.google.common.geometry.S2Point;
 import com.google.common.geometry.S2Polygon;
-
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.Geometry;
@@ -69,46 +75,73 @@ public final class GeoJsonTzToTzS2Polygons {
 
     private final ProtoStorageFormat mProtoStorageFormat;
 
-    private Set<String> mTzIds;
+    private final Set<String> mTzIds;
 
     private GeoJsonTzToTzS2Polygons(
             File inputFile, ExecutorService executorService, File outputDir,
-            ProtoStorageFormat protoStorageFormat) {
+            ProtoStorageFormat protoStorageFormat,
+            Set<String> tzIds) {
         this.mInputFile = Objects.requireNonNull(inputFile);
         this.mExecutorService = Objects.requireNonNull(executorService);
         this.mOutputDir = Objects.requireNonNull(outputDir);
         this.mProtoStorageFormat = Objects.requireNonNull(protoStorageFormat);
+        this.mTzIds = Objects.requireNonNull(tzIds);
+    }
+
+    private static class Arguments {
+
+        @Parameter(names = "--geo-json",
+                description = "The input geojson file to parse",
+                required = true,
+                converter = FileConverter.class)
+        File geoJsonFile;
+
+        @Parameter(names = "--num-threads",
+                description = "The number of threads to use",
+                required = true)
+        int numThreads;
+
+        @Parameter(names = "--output",
+                description = "The output directory",
+                required = true,
+                converter = FileConverter.class)
+        File outputDir;
+
+        @Parameter(names = "--tz-ids",
+                description = "Comma separated list of time zones to build S2Polygons for")
+        String tzIds;
+
+        Set<String> tzIds() {
+            return tzIds == null
+                    ? ImmutableSet.of()
+                    : Arrays.stream(tzIds.split(","))
+                            .filter(tzId -> !tzId.isEmpty())
+                            .collect(toImmutableSet());
+        }
     }
 
     /**
      * See {@link GeoJsonTzToTzS2Polygons} for the purpose of this class.
-     *
-     * <p>Arguments:
-     * <ol>
-     *     <li>The input geojson file to parse</li>
-     *     <li>The number of threads to use</li>
-     *     <li>The output directory</li>
-     * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputFile = new File(args[0]);
-        int threads = Integer.parseInt(args[1]);
-        File outputDir = new File(args[2]);
-        ProtoStorageFormat protoStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
 
-        Set<String> tzIds = null;
-        if (args.length > 3) {
-            tzIds = new HashSet<>(Arrays.asList(args[3].split(",")));
-        }
+        File inputFile = arguments.geoJsonFile;
+        int threads = arguments.numThreads;
+        File outputDir = arguments.outputDir;
+        Set<String> tzIds = arguments.tzIds();
+        ProtoStorageFormat protoStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
         outputDir.mkdirs();
 
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
+
         GeoJsonTzToTzS2Polygons converter = new GeoJsonTzToTzS2Polygons(
-                inputFile, executorService, outputDir, protoStorageFormat);
-        if (tzIds != null) {
-            converter.restrictTzIds(tzIds);
-        }
+                inputFile, executorService, outputDir, protoStorageFormat, tzIds);
 
         try {
             converter.execute();
@@ -119,20 +152,20 @@ public final class GeoJsonTzToTzS2Polygons {
         }
     }
 
-    private void restrictTzIds(Set<String> tzIds) {
-        this.mTzIds = tzIds;
-    }
-
     private void execute() throws Exception {
         FeatureCollection featureCollection = loadFeatures(mInputFile);
 
         LicenseSupport.copyLicenseFile(mInputFile.getParentFile(), mOutputDir);
 
+        if (!mTzIds.isEmpty()) {
+            System.out.println("Building polygons for " + mTzIds);
+        }
+
         List<Feature> features = featureCollection.getFeatures();
         List<NamedFuture<TzS2Polygons>> futures = new ArrayList<>(features.size());
         for (Feature feature : features) {
             String tzId = (String) feature.getProperties().get("tzid");
-            if (mTzIds != null && !mTzIds.contains(tzId)) {
+            if (!mTzIds.isEmpty() && !mTzIds.contains(tzId)) {
                 continue;
             }
             System.out.println("Submitting " + tzId + " ...");

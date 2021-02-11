@@ -21,6 +21,10 @@ import com.android.timezone.location.storage.tzs2range.TzS2Range;
 import com.android.timezone.location.storage.tzs2range.TzS2RangeFileFormat;
 import com.android.timezone.location.storage.tzs2range.write.TzS2RangeFileWriter;
 import com.android.timezone.location.tools.proto.GeotzProtos;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
 import com.google.protobuf.TextFormat;
 
 import java.io.File;
@@ -31,6 +35,28 @@ import java.util.List;
 /** Creates a TZ S2 file from a text proto file. */
 public final class CreateTzS2File {
 
+
+    private static class Arguments {
+
+        @Parameter(names = "--input-file",
+                description = "Proto file",
+                required = true,
+                converter = FileConverter.class)
+        File inputFile;
+
+        @Parameter(names = "--s2-level",
+                description = "s2 level of input data",
+                required = true)
+        int s2Level;
+
+        @Parameter(names = "--output-file",
+                description = "tz s2 file",
+                required = true,
+                converter = FileConverter.class)
+        File outputFile;
+
+    }
+
     /*
      * Usage:
      * CreateTzS2File <[input] proto file> <[input] s2 level of input data> <[output] tz s2 file>
@@ -38,9 +64,14 @@ public final class CreateTzS2File {
      * The proto file is defined in geotz_protos.proto. The data must be ordered correctly.
      */
     public static void main(String[] args) throws Exception {
-        File inputFile = new File(args[0]);
-        int s2Level = Integer.parseInt(args[1]);
-        File outputFile = new File(args[2]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+        File inputFile = arguments.inputFile;
+        int s2Level = arguments.s2Level;
+        File outputFile = arguments.outputFile;
 
         // The input file is expected to be associated with a LICENSE file. Copy it to the output
         // directory.
