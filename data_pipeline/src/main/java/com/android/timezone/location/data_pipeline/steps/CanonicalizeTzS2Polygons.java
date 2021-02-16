@@ -22,6 +22,9 @@ import com.android.timezone.location.data_pipeline.steps.Types.ProtoStorageForma
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Polygons;
 import com.android.timezone.tzids.TimeZoneIds;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
 import com.google.common.geometry.S2Polygon;
 
 import java.io.File;
@@ -83,22 +86,51 @@ public class CanonicalizeTzS2Polygons {
         mProtoFormat = Objects.requireNonNull(protoFormat);
     }
 
+    private static class Arguments {
+
+        @Parameter(names = "--input",
+                description = "The input directory containing TzS2Polygons files",
+                required = true,
+                converter = FileConverter.class)
+        File inputDir;
+
+        @Parameter(names = "--tz-ids",
+                description = "The input TzIds prototz file",
+                required = true,
+                converter = FileConverter.class)
+        File tzIdsFile;
+
+        @Parameter(names = "--replacement-threshold",
+                description = "The ISO 8601 format date/time to use when generating time zone"
+                        + " ID replacements",
+                required = true)
+        String replacementThreshold;
+
+        @Parameter(names = "--output",
+                description = "The output dir to write TzS2Polygons files to",
+                required = true,
+                converter = FileConverter.class)
+        File outputDir;
+
+        Instant replacementThreshold() {
+            return Instant.parse(replacementThreshold);
+        }
+
+    }
+
     /**
      * See {@link CanonicalizeTzS2Polygons} for the purpose of this class.
-     *
-     * <p>Arguments:
-     * <ol>
-     *     <li>The input dir containing {@link TzS2Polygons} files</li>
-     *     <li>The input {@link TzIds} prototxt file</li>
-     *     <li>The ISO 8601 format date/time to use when generating time zone ID replacements.</li>
-     *     <li>The output dir to write {@link TzS2Polygons} files to</li>
-     * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputDir = new File(args[0]);
-        File tzIdsFile = new File(args[1]);
-        Instant replacementThreshold = Instant.parse(args[2]);
-        File outputDir = new File(args[3]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+        File inputDir = arguments.inputDir;
+        File tzIdsFile = arguments.tzIdsFile;
+        Instant replacementThreshold = arguments.replacementThreshold();
+        File outputDir = arguments.outputDir;
         ProtoStorageFormat storageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
         outputDir.getParentFile().mkdirs();

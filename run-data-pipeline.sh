@@ -162,8 +162,11 @@ if (( ${SKIP_TO_STEP} <= 1 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step1.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP1_CMD} ${UNZIPPED_BOUNDARY_FILE} ${STEP1_THREAD_COUNT} \
-        ${STEP1_WORKING_DIR} ${STEP1_RESTRICT_TO_ZONES}
+    ${STEP1_CMD} \
+        --geo-json ${UNZIPPED_BOUNDARY_FILE} \
+        --num-threads ${STEP1_THREAD_COUNT} \
+        --output ${STEP1_WORKING_DIR} \
+        --tz-ids "${STEP1_RESTRICT_TO_ZONES}"
   } &> ${LOG_FILE}
 else
   echo Skipping...
@@ -177,8 +180,11 @@ if (( ${SKIP_TO_STEP} <= 2 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step2.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP2_CMD} ${STEP1_WORKING_DIR} ${STEP2_TZIDS_FILE} \
-        ${STEP2_REPLACEMENT_THREADHOLD} ${STEP2_WORKING_DIR}
+    ${STEP2_CMD} \
+      --input ${STEP1_WORKING_DIR} \
+      --tz-ids ${STEP2_TZIDS_FILE} \
+      --replacement-threshold ${STEP2_REPLACEMENT_THREADHOLD} \
+      --output ${STEP2_WORKING_DIR}
   } &> ${LOG_FILE}
 else
   echo Skipping...
@@ -192,8 +198,11 @@ if (( ${SKIP_TO_STEP} <= 3 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step3.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP3_CMD} ${STEP2_WORKING_DIR} ${STEP3_THREAD_COUNT} \
-        ${STEP3_WORKING_DIR} ${S2_LEVEL}
+    ${STEP3_CMD} \
+      --input ${STEP2_WORKING_DIR} \
+      --num-threads ${STEP3_THREAD_COUNT} \
+      --output ${STEP3_WORKING_DIR} \
+      --max-s2-level ${S2_LEVEL}
   } &> ${LOG_FILE}
 else
   echo Skipping...
@@ -207,8 +216,11 @@ if (( ${SKIP_TO_STEP} <= 4 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step4.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP4_CMD} ${STEP3_WORKING_DIR} ${STEP4_THREAD_COUNT} \
-        ${STEP4_WORKING_DIR} ${S2_LEVEL}
+    ${STEP4_CMD} \
+      --input ${STEP3_WORKING_DIR} \
+      --num-threads ${STEP4_THREAD_COUNT} \
+      --output ${STEP4_WORKING_DIR} \
+      --s2-level ${S2_LEVEL}
   } &> ${LOG_FILE}
 else
   echo Skipping...
@@ -222,8 +234,11 @@ if (( ${SKIP_TO_STEP} <= 5 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step5.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP5_CMD} ${STEP4_WORKING_DIR} ${STEP5_THREAD_COUNT} \
-        ${STEP5_WORKING_DIR} ${STEP5_OUTPUT_FILE}
+    ${STEP5_CMD} \
+      --input ${STEP4_WORKING_DIR} \
+      --num-threads ${STEP5_THREAD_COUNT} \
+      --working-dir ${STEP5_WORKING_DIR} \
+      --output-file ${STEP5_OUTPUT_FILE}
   } &> ${LOG_FILE}
 else
   echo Skipping...
@@ -236,7 +251,9 @@ if (( ${SKIP_TO_STEP} <= 6 )); then
   LOG_FILE=${WORKING_DIR_ROOT}/step6.log
   echo Logging to ${LOG_FILE} ...
   {
-    ${STEP6_CMD} ${STEP5_OUTPUT_FILE} ${STEP6_OUTPUT_FILE}
+    ${STEP6_CMD} \
+      --input-file ${STEP5_OUTPUT_FILE} \
+      --output-file ${STEP6_OUTPUT_FILE}
   } 2>&1 > ${LOG_FILE}
 else
   echo Skipping...
@@ -250,7 +267,10 @@ if (( ${SKIP_TO_STEP} <= 7 )); then
   echo Logging to ${LOG_FILE} ...
   mkdir -p $(dirname ${STEP7_OUTPUT_FILE})
   {
-    ${STEP7_CMD} ${STEP6_OUTPUT_FILE} ${S2_LEVEL} ${STEP7_OUTPUT_FILE}
+    ${STEP7_CMD} \
+      --input-file ${STEP6_OUTPUT_FILE} \
+      --s2-level ${S2_LEVEL} \
+      --output-file ${STEP7_OUTPUT_FILE}
   } 2>&1 > ${LOG_FILE}
 else
   echo Skipping...
