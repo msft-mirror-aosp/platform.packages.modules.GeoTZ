@@ -17,7 +17,8 @@
 package com.android.timezone.location.storage.tzs2range;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -33,9 +34,9 @@ public class SuffixTableRangeTest {
         long startCellId = cellId(12, 5, 1);
         long endCellId = cellId(12, 5, 2);
         int tzIdSetId = 100;
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> new SuffixTableRange(startCellId, startCellId, tzIdSetId));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> new SuffixTableRange(endCellId, startCellId, tzIdSetId));
     }
 

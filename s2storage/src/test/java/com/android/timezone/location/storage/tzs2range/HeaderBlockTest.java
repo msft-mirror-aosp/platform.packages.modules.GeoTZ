@@ -17,6 +17,7 @@
 package com.android.timezone.location.storage.tzs2range;
 
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 

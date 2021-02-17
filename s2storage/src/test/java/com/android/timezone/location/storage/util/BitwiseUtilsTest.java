@@ -16,7 +16,8 @@
 
 package com.android.timezone.location.storage.util;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Assert;
@@ -26,8 +27,8 @@ public class BitwiseUtilsTest {
 
     @Test
     public void maxUnsignedValue() {
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.maxUnsignedValue(0));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.maxUnsignedValue(64));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.maxUnsignedValue(0));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.maxUnsignedValue(64));
 
         assertEquals(1, BitwiseUtils.maxUnsignedValue(1));
         assertEquals(3, BitwiseUtils.maxUnsignedValue(2));
@@ -38,8 +39,8 @@ public class BitwiseUtilsTest {
 
     @Test
     public void getLowBitsMask() {
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getLowBitsMask(-1));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getLowBitsMask(65));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getLowBitsMask(-1));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getLowBitsMask(65));
 
         assertEquals(0x0, BitwiseUtils.getLowBitsMask(0));
         assertEquals(0x1, BitwiseUtils.getLowBitsMask(1));
@@ -50,10 +51,10 @@ public class BitwiseUtilsTest {
 
     @Test
     public void getMidBitsMask() {
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getMidBitsMask(0, 1));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getMidBitsMask(65, 1));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getMidBitsMask(64, 65));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getMidBitsMask(16, 17));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getMidBitsMask(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getMidBitsMask(65, 1));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getMidBitsMask(64, 65));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getMidBitsMask(16, 17));
 
         assertEquals(0b1000, BitwiseUtils.getMidBitsMask(4, 1));
         assertEquals(0b1100, BitwiseUtils.getMidBitsMask(4, 2));
@@ -144,15 +145,15 @@ public class BitwiseUtilsTest {
         assertEquals(0xFFFFFFFFFFFFFFFCL, BitwiseUtils.getHighBitsMask(62));
         assertEquals(0xFFFFFFFFFFFFFFFEL, BitwiseUtils.getHighBitsMask(63));
         assertEquals(0xFFFFFFFFFFFFFFFFL, BitwiseUtils.getHighBitsMask(64));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getHighBitsMask(65));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getHighBitsMask(0));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getHighBitsMask(65));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getHighBitsMask(0));
     }
 
     @Test
     public void extractLowBits() {
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> BitwiseUtils.extractLowBits(65, 0xFFFFFFFFFFFFFFFFL));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> BitwiseUtils.extractLowBits(0, 0xFFFFFFFFFFFFFFFFL));
 
         assertEquals(0xFFFFFFFFFFFFFFFFL, BitwiseUtils.extractLowBits(64, 0xFFFFFFFFFFFFFFFFL));
@@ -164,8 +165,8 @@ public class BitwiseUtilsTest {
 
     @Test
     public void getSingleBitMask() {
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getSingleBitMask(64));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.getSingleBitMask(-1));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getSingleBitMask(64));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.getSingleBitMask(-1));
 
         assertEquals(0x8000000000000000L, BitwiseUtils.getSingleBitMask(63));
         assertEquals(0x4000000000000000L, BitwiseUtils.getSingleBitMask(62));
@@ -176,9 +177,9 @@ public class BitwiseUtilsTest {
 
     @Test
     public void signExtendToLong() {
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> BitwiseUtils.signExtendToLong(65, 0x555555555555555L));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> BitwiseUtils.signExtendToLong(0, 0x555555555555555L));
 
         assertEquals(0xF555555555555555L, BitwiseUtils.signExtendToLong(64, 0xF555555555555555L));
@@ -208,7 +209,7 @@ public class BitwiseUtilsTest {
 
         assertEquals("1", BitwiseUtils.toUnsignedString(1, 1));
         assertEquals("10", BitwiseUtils.toUnsignedString(2, 2));
-        assertThrowsIllegalArgumentException(() -> BitwiseUtils.toUnsignedString(1, 2));
+        assertThrows(IllegalArgumentException.class, () -> BitwiseUtils.toUnsignedString(1, 2));
     }
 
     @Test
