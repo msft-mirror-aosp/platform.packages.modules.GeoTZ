@@ -46,7 +46,10 @@ java_test_host {
         "geotz_s2storage_rw",
         "junit",
         "mockito",
+        "objenesis",
     ],
-    test_suites: ["general-tests"],
+    test_options: {
+        unit_test: true,
+    },
 }
 
