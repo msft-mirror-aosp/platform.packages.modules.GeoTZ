@@ -59,6 +59,9 @@ apex {
 java_library {
     name: "geotz",
     java_resource_dirs: ["resources/"],
+    srcs: [
+        "src/main/java/**/*.java",
+    ],
     static_libs: [
         "offlinelocationtimezoneprovider",
     ],
@@ -67,3 +70,4 @@ java_library {
         "com.android.geotz",
     ],
 }
+
