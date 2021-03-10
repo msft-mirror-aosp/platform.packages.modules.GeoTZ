@@ -57,8 +57,7 @@ import java.util.Objects;
  * <p>Implementation details:
  *
  * <p>The instance interacts with multiple threads, but state changes occur in a single-threaded
- * manner through the use of a lock object, {@link #mLock}, obtained from {@link
- * Environment#getSharedLockObject()}.
+ * manner through the use of a lock object, {@link #mLock}.
  *
  * <p>There are two listening modes:
  * <ul>
@@ -311,7 +310,7 @@ public final class OfflineLocationTimeZoneDelegate {
             logDebug(debugInfo);
 
             // Recover any active listening budget we didn't use.
-            Duration timeListening = activeListeningResult.getEstimatedTimeListening();
+            Duration timeListening = activeListeningResult.getTotalEstimatedTimeListening();
             Duration activeListeningDuration =
                     activeListeningResult.getRequestedListeningDuration();
             Duration activeListeningDurationNotUsed = activeListeningDuration.minus(timeListening);

@@ -125,12 +125,12 @@ public interface Environment {
         }
 
         /**
-         * Returns the estimated time between when the listening started and this result was
+         * Returns the estimated time between when the listening session started and this result was
          * generated. This value is <em>not</em> incremental, i.e. if listening is continuous then
          * this returns the total time listening and not the time elapsed since the last result.
          */
         @NonNull
-        public Duration getEstimatedTimeListening() {
+        public Duration getTotalEstimatedTimeListening() {
             Duration estimatedTimeListening =
                     Duration.ofMillis(mResultElapsedRealtimeMillis - mStartElapsedRealtimeMillis);
             // Guard against invalid times that could be caused if locations have an incorrect
@@ -169,7 +169,7 @@ public interface Environment {
                     + ", mResultElapsedRealtimeMillis="
                     + formatElapsedRealtimeMillis(mResultElapsedRealtimeMillis)
                     + ", mLocation=" + mLocation
-                    + ", getEstimatedTimeListening()=" + getEstimatedTimeListening()
+                    + ", getTotalEstimatedTimeListening()=" + getTotalEstimatedTimeListening()
                     + '}';
         }
     }
