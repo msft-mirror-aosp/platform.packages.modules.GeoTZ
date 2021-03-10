@@ -141,11 +141,6 @@ class Mode {
         return new Mode(MODE_STOPPED, "init" /* entryCause */);
     }
 
-    @NonNull
-    Cancellable getLocationListenerCancellable() {
-        return Objects.requireNonNull(mLocationListenerCancellable);
-    }
-
     /**
      * If this mode is associated with location listening, this invokes {@link
      * Cancellable#cancel()}. If this mode is not associated with location listening, this is a
