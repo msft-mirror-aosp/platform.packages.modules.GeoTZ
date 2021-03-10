@@ -43,6 +43,7 @@ import com.android.timezone.location.lookup.GeoTimeZonesFinder;
 import com.android.timezone.location.provider.core.Cancellable;
 import com.android.timezone.location.provider.core.Environment;
 import com.android.timezone.location.provider.core.LocationListeningAccountant;
+import com.android.timezone.location.provider.core.MetricsReporter;
 import com.android.timezone.location.provider.core.TimeZoneProviderResult;
 
 import java.io.File;
@@ -81,6 +82,17 @@ class EnvironmentImpl implements Environment {
      */
     private static final String RESOURCE_CONFIG_KEY_DEVICE_CONFIG_KEY_PREFIX =
             "deviceconfig.key_prefix";
+
+    /**
+     * The config properties key for the implementation of {@link MetricsReporter} to use.
+     */
+    private static final String RESOURCE_CONFIG_METRICS_REPORTER_IMPL = "metrics_reporter.impl";
+
+    /**
+     * An identifier that can be used to distinguish between different deployments of the same code.
+     */
+    private static final String RESOURCE_CONFIG_METRICS_REPORTER_DEPLOYMENT_IDENTIFIER =
+            "metrics_reporter.identifier";
 
     /** An arbitrary value larger than the largest time we might want to hold a wake lock. */
     private static final long WAKELOCK_ACQUIRE_MILLIS = Duration.ofMinutes(1).toMillis();
@@ -134,6 +146,7 @@ class EnvironmentImpl implements Environment {
     @NonNull private final String mDeviceConfigNamespace;
     @NonNull private final String mDeviceConfigKeyPrefix;
     @NonNull private final DelegatingLocationListeningAccountant mLocationListeningAccountant;
+    @NonNull private final MetricsReporter mMetricsReporter;
 
     EnvironmentImpl(@NonNull Context context,
             @NonNull Consumer<TimeZoneProviderResult> resultConsumer) {
@@ -153,6 +166,10 @@ class EnvironmentImpl implements Environment {
         mDeviceConfigKeyPrefix = Objects.requireNonNull(
                 configProperties.getProperty(RESOURCE_CONFIG_KEY_DEVICE_CONFIG_KEY_PREFIX));
 
+        String metricsReporterClassName =
+                configProperties.getProperty(RESOURCE_CONFIG_METRICS_REPORTER_IMPL);
+        mMetricsReporter = createMetricsReporter(metricsReporterClassName);
+
         LocationListeningAccountant realLocationListeningAccountant =
                 createRealLocationListeningAccountant();
         mLocationListeningAccountant =
@@ -166,6 +183,15 @@ class EnvironmentImpl implements Environment {
         // Monitor for changes that affect the accountant's configuration.
         DeviceConfig.addOnPropertiesChangedListener(
                 mDeviceConfigNamespace, mExecutor, this::handleDeviceConfigChanged);
+    }
+
+    private MetricsReporter createMetricsReporter(@NonNull String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return (MetricsReporter) clazz.newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Unable to instantiate MetricsReporter", e);
+        }
     }
 
     private static Properties loadConfigProperties(ClassLoader classLoader) {
@@ -271,11 +297,18 @@ class EnvironmentImpl implements Environment {
             LocationListener locationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(@NonNull Location location) {
+                    long resultElapsedRealtimeMillis = elapsedRealtimeMillis();
                     LocationListeningResult result = new LocationListeningResult(
                             LOCATION_LISTEN_MODE_PASSIVE,
                             duration, startElapsedRealtimeMillis,
-                            elapsedRealtimeMillis(),
+                            resultElapsedRealtimeMillis,
                             location);
+
+                    // Note: We only log metrics when listening stops (since we're primarily
+                    // interested in active usage for system health reasons). Passive listening
+                    // continues until it is cancelled or the timeout managed by this class
+                    // triggers, so there is no need to do metrics logging here.
+
                     listeningResultConsumer.accept(result);
                 }
             };
@@ -285,8 +318,8 @@ class EnvironmentImpl implements Environment {
 
             // Using the passive provider means we will potentially see GPS-originated locations
             // in addition to just "fused" locationprovider updates.
-            // We don't use the setDurationMillis() since we handle our own timeout below, which
-            // provides an explicit callback when listening stops.
+            // We don't use the setDurationMillis() with a real time, since we handle our own
+            // timeout below, which provides an explicit callback when listening stops.
             LocationRequest locationRequest = new LocationRequest.Builder(minUpdateInterval)
                     .setMinUpdateDistanceMeters(0)
                     .setMinUpdateIntervalMillis(minUpdateInterval)
@@ -300,7 +333,7 @@ class EnvironmentImpl implements Environment {
                     LocationManager.PASSIVE_PROVIDER, locationRequest, mExecutor, locationListener);
 
             String callbackIdentifier = "passive:" + duration + "@"
-                    + formatElapsedRealtimeMillis(elapsedRealtimeMillis());
+                    + formatElapsedRealtimeMillis(startElapsedRealtimeMillis);
             Consumer<String> timeoutCallback = token -> {
                 // When the timeout triggers we must cancel the location listening.
                 mLocationManager.removeUpdates(locationListener);
@@ -311,9 +344,15 @@ class EnvironmentImpl implements Environment {
                 // sleep in the middle and get misleading values.
                 try {
                     acquireWakeLock();
-                    Duration timeElapsed =
-                            Duration.ofMillis(elapsedRealtimeMillis() - startElapsedRealtimeMillis);
-                    passiveListeningCompletedCallback.accept(timeElapsed);
+                    long actualTimeListeningMillis =
+                            elapsedRealtimeMillis() - startElapsedRealtimeMillis;
+                    Duration actualTimeListening = Duration.ofMillis(actualTimeListeningMillis);
+                    passiveListeningCompletedCallback.accept(actualTimeListening);
+
+                    mMetricsReporter.reportLocationListeningCompletedEvent(
+                            LOCATION_LISTEN_MODE_PASSIVE, duration.toMillis(),
+                            actualTimeListeningMillis,
+                            MetricsReporter.LISTENING_STOPPED_REASON_TIMED_OUT);
                 } finally {
                     releaseWakeLock();
                 }
@@ -324,6 +363,11 @@ class EnvironmentImpl implements Environment {
             return new BaseCancellable(callbackIdentifier) {
                 @Override
                 public void onCancel() {
+                    long timeListeningMillis = elapsedRealtimeMillis() - startElapsedRealtimeMillis;
+                    mMetricsReporter.reportLocationListeningCompletedEvent(
+                            LOCATION_LISTEN_MODE_PASSIVE, duration.toMillis(), timeListeningMillis,
+                            MetricsReporter.LISTENING_STOPPED_REASON_CANCELLED);
+
                     timeoutCancellable.cancel();
                     mLocationManager.removeUpdates(locationListener);
                 }
@@ -337,39 +381,49 @@ class EnvironmentImpl implements Environment {
     @Override
     public Cancellable startActiveGetCurrentLocation(@NonNull Duration duration,
             @NonNull Consumer<LocationListeningResult> locationResultConsumer) {
-        CancellationSignal cancellationSignal = new CancellationSignal();
-        String identifier = "active:"  + duration + "@"
-                + formatElapsedRealtimeMillis(elapsedRealtimeMillis());
-        Cancellable locationListenerCancellable = new BaseCancellable(identifier) {
-            @Override
-            protected void onCancel() {
-                cancellationSignal.cancel();
-            }
-        };
-
-        long intervalMillis = 0; // Not used
-        long durationMillis = duration.toMillis();
-        LocationRequest locationRequest = new LocationRequest.Builder(intervalMillis)
-                .setDurationMillis(durationMillis)
-                .setQuality(QUALITY_HIGH_ACCURACY /* try to force GPS on when it's needed */)
-                .setMaxUpdateDelayMillis(0 /* no batching */)
-                .build();
-
         try {
             // Keep a wakelock while we call getCurrentLocation() so we can calculate a fairly
             // accurate (upper bound) of how long the device has been actively listening when we
             // get a result.
             acquireWakeLock();
+
+            CancellationSignal cancellationSignal = new CancellationSignal();
             long startElapsedRealtimeMillis = elapsedRealtimeMillis();
+            String identifier = "active:"  + duration + "@"
+                    + formatElapsedRealtimeMillis(startElapsedRealtimeMillis);
+            Cancellable locationListenerCancellable = new BaseCancellable(identifier) {
+                @Override
+                protected void onCancel() {
+                    long timeListeningMillis = elapsedRealtimeMillis() - startElapsedRealtimeMillis;
+                    mMetricsReporter.reportLocationListeningCompletedEvent(
+                            LOCATION_LISTEN_MODE_ACTIVE, duration.toMillis(), timeListeningMillis,
+                            MetricsReporter.LISTENING_STOPPED_REASON_CANCELLED);
+
+                    cancellationSignal.cancel();
+                }
+            };
+
+            long intervalMillis = 0; // Not used
+            long requestedDurationMillis = duration.toMillis();
+            LocationRequest locationRequest = new LocationRequest.Builder(intervalMillis)
+                    .setDurationMillis(requestedDurationMillis)
+                    .setQuality(QUALITY_HIGH_ACCURACY /* try to force GPS on when it's needed */)
+                    .setMaxUpdateDelayMillis(0 /* no batching */)
+                    .build();
+
             Consumer<Location> locationConsumer = location -> {
+                long resultElapsedRealtimeMillis = elapsedRealtimeMillis();
                 LocationListeningResult result = new LocationListeningResult(
                         LOCATION_LISTEN_MODE_ACTIVE,
                         duration,
                         startElapsedRealtimeMillis,
-                        elapsedRealtimeMillis(),
+                        resultElapsedRealtimeMillis,
                         location);
-                // TODO Add a metric to record the time spent active listening. http://b/152746105
-                //  result.getEstimatedTimeListening();
+                mMetricsReporter.reportLocationListeningCompletedEvent(
+                        LOCATION_LISTEN_MODE_ACTIVE,
+                        result.getRequestedListeningDuration().toMillis(),
+                        result.getTotalEstimatedTimeListening().toMillis(),
+                        MetricsReporter.LISTENING_STOPPED_REASON_LOCATION_OBTAINED);
 
                 locationResultConsumer.accept(result);
             };
@@ -377,6 +431,7 @@ class EnvironmentImpl implements Environment {
             mLocationManager.getCurrentLocation(
                     LocationManager.FUSED_PROVIDER, locationRequest, cancellationSignal, mExecutor,
                     locationConsumer);
+
             return locationListenerCancellable;
         } finally {
             releaseWakeLock();
