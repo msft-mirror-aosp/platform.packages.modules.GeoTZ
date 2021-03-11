@@ -16,7 +16,8 @@
 
 package com.android.timezone.location.storage.s2;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 
 import com.android.timezone.location.storage.util.BitwiseUtils;
@@ -27,8 +28,8 @@ public class S2SupportTest {
 
     @Test
     public void cellIdToString() {
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(0));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(0));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11100000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L));
         // Valid face IDs
         S2Support.cellIdToString(
@@ -44,21 +45,21 @@ public class S2SupportTest {
         S2Support.cellIdToString(
                 0b10110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L);
         // Invalid face ID
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11010000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11110000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L));
 
         // Final bit in a bad position.
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11101000_00000000_00000000_00000000_00000000_00000000_00000000_00000000L));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11101010_00000000_00000000_00000000_00000000_00000000_00000000_00000000L));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11101010_10000000_00000000_00000000_00000000_00000000_00000000_00000000L));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11101010_10100000_00000000_00000000_00000000_00000000_00000000_00000000L));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellIdToString(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellIdToString(
                 0b11101010_10100000_00000000_00000000_00000000_00000000_00000000_00000010L));
 
         // Valid
@@ -71,40 +72,42 @@ public class S2SupportTest {
     @Test
     public void cellId() {
         // Invalid levels
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(-1, 0, 0));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(-1, 0, 0));
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.cellId(S2Support.MAX_S2_LEVEL + 1, 0, 0));
 
         // level 0 (face only)
         assertCellIdEquals(0b00010000L << 56, S2Support.cellId(0, 0, 0));
         assertCellIdEquals(0b00110000L << 56, S2Support.cellId(0, 1, 0));
         assertCellIdEquals(0b10110000L << 56, S2Support.cellId(0, S2Support.MAX_FACE_ID, 0));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(0, -1, 0));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(0, -1, 0));
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.cellId(0, S2Support.MAX_FACE_ID + 1, 0));
 
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(0, 0, -1));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(0, 0, 1));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(0, S2Support.MAX_FACE_ID, 1));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(0, 0, -1));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(0, 0, 1));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.cellId(0, S2Support.MAX_FACE_ID, 1));
 
         // level 1, 2 bits for index.
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(1, -1, 0));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(1, -1, 0));
         assertCellIdEquals(0b00000100L << 56, S2Support.cellId(1, 0, 0));
         assertCellIdEquals(0b00100100L << 56, S2Support.cellId(1, 1, 0));
         assertCellIdEquals(0b10100100L << 56, S2Support.cellId(1, S2Support.MAX_FACE_ID, 0));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.cellId(1, S2Support.MAX_FACE_ID + 1, 0));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(1, S2Support.MAX_FACE_ID, -1));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(1, 0, -1));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.cellId(1, S2Support.MAX_FACE_ID, -1));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(1, 0, -1));
 
         assertCellIdEquals(0b00001100L << 56, S2Support.cellId(1, 0, 1));
         assertCellIdEquals(0b00010100L << 56, S2Support.cellId(1, 0, 2));
         assertCellIdEquals(0b00011100L << 56, S2Support.cellId(1, 0, 3));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(1, 0, 4));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(1, 0, 4));
         assertCellIdEquals(0b00101100L << 56, S2Support.cellId(1, 1, 1));
         assertCellIdEquals(0b00110100L << 56, S2Support.cellId(1, 1, 2));
         assertCellIdEquals(0b00111100L << 56, S2Support.cellId(1, 1, 3));
-        assertThrowsIllegalArgumentException(() -> S2Support.cellId(1, 0, 4));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.cellId(1, 0, 4));
 
         // Level 30 - 3 face bits + 60 "storage bits" + 1-bit (1)
         assertCellIdEquals(
@@ -125,7 +128,7 @@ public class S2SupportTest {
         assertCellIdEquals(
                 0b00111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111L,
                 S2Support.cellId(30, 1, 0x0FFFFFFFFFFFFFFFL /* (2^61)-1 */));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.cellId(30, 1, 0x1000000000000000L /* 2^61 */));
     }
 
@@ -140,23 +143,25 @@ public class S2SupportTest {
     @Test
     public void validateCellId() {
         // At the trailing 1.
-        assertThrowsIllegalArgumentException(() -> S2Support.validateCellId(0b00000000));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.validateCellId(0b00000000));
         S2Support.validateCellId(0b00000001);
-        assertThrowsIllegalArgumentException(() -> S2Support.validateCellId(0b00000010));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.validateCellId(0b00000010));
         S2Support.validateCellId(0b00000100);
-        assertThrowsIllegalArgumentException(() -> S2Support.validateCellId(0b00001000));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.validateCellId(0b00001000));
 
         // Max valid face ID (101 = 5)
         S2Support.validateCellId((0b10100000L << 56) | 0b00000001L);
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.validateCellId((0b10100000L << 56) | 0b00000010));
         S2Support.validateCellId((0b10100000L << 56) | 0b00000100L);
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> S2Support.validateCellId((0b10100000L << 56) | 0b00001000));
 
         // Invalid face ID (111 == 6)
-        assertThrowsIllegalArgumentException(() -> S2Support.validateCellId(0b11110000L << 56));
-        assertThrowsIllegalArgumentException(() -> S2Support.validateCellId(0b11100100L << 56));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.validateCellId(0b11110000L << 56));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.validateCellId(0b11100100L << 56));
     }
 
     @Test
@@ -165,8 +170,10 @@ public class S2SupportTest {
         assertEquals(0b00010000L << 56, S2Support.offsetCellId(0b00010000L << 56, 0));
         assertEquals(0b00000100L << 56, S2Support.offsetCellId(0b00000100L << 56, 0));
 
-        assertThrowsIllegalArgumentException(() -> S2Support.offsetCellId(0b00010000L << 56, 6));
-        assertThrowsIllegalArgumentException(() -> S2Support.offsetCellId(0b10111100L << 56, 24));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.offsetCellId(0b00010000L << 56, 6));
+        assertThrows(IllegalArgumentException.class,
+                () -> S2Support.offsetCellId(0b10111100L << 56, 24));
 
         // Try level 0 behavior.
         assertEquals(0b00110000L << 56, S2Support.offsetCellId(0b00010000L << 56, 1));
@@ -192,11 +199,11 @@ public class S2SupportTest {
     @Test
     public void getS2Level() {
         assertEquals(30, S2Support.getS2Level(0b00000001L));
-        assertThrowsIllegalArgumentException(() -> S2Support.getS2Level(0b00000010L));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.getS2Level(0b00000010L));
         assertEquals(29, S2Support.getS2Level(0b00000100L));
 
         assertEquals(1, S2Support.getS2Level(0b00000100L << 56));
-        assertThrowsIllegalArgumentException(() -> S2Support.getS2Level(0b00001000L << 56));
+        assertThrows(IllegalArgumentException.class, () -> S2Support.getS2Level(0b00001000L << 56));
         assertEquals(0, S2Support.getS2Level(0b00010000L << 56));
     }
 

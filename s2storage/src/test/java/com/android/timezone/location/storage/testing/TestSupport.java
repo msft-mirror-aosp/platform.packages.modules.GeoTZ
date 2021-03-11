@@ -16,9 +16,6 @@
 
 package com.android.timezone.location.storage.testing;
 
-import org.junit.Assert;
-
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -27,42 +24,6 @@ import java.util.Set;
 public class TestSupport {
 
     private TestSupport() {
-    }
-
-    @FunctionalInterface
-    public interface Testable {
-
-        void run() throws IOException;
-    }
-
-    public static void assertThrowsIllegalArgumentException(Testable runnable) {
-        try {
-            runnable.run();
-            Assert.fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException expected) {
-        } catch (Exception e) {
-            Assert.fail("Unexpected exception: " + e.getMessage());
-        }
-    }
-
-    public static void assertThrowsIllegalStateException(Testable runnable) {
-        try {
-            runnable.run();
-            Assert.fail("Expected IllegalStateException");
-        } catch (IllegalStateException expected) {
-        } catch (Exception e) {
-            Assert.fail("Unexpected exception: " + e.getMessage());
-        }
-    }
-
-    public static void assertThrowsIndexOutOfBoundsException(Testable runnable) {
-        try {
-            runnable.run();
-            Assert.fail("Expected IllegalArgumentException");
-        } catch (IndexOutOfBoundsException expected) {
-        } catch (Exception e) {
-            Assert.fail("Unexpected exception: " + e.getMessage());
-        }
     }
 
     @SafeVarargs

@@ -17,7 +17,8 @@
 package com.android.timezone.location.storage.tzs2range;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -95,11 +96,11 @@ public class TzS2RangeFileFormatTest {
                 entryRangeLengthBitCount);
 
         // Too many bits for prefixValue
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> tzS2RangeFileFormat.createCellId(0b1000_00000000, 0b10000000_00000000));
 
         // Too many bits for suffixValue
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> tzS2RangeFileFormat.createCellId(0b1000_00000000, 0b100000000_00000000));
 
         // Some valid cases.
@@ -151,11 +152,11 @@ public class TzS2RangeFileFormatTest {
         // ID: suffixTableEntryBitCount(24) - suffixBitCount(16) - entryRangeLengthBitCount(5) = 3
 
         // Too many bits for rangeLength
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> tzS2RangeFileFormat.createSuffixTableValue(0b100000, 0b101));
 
         // Too many bits for tzIdSetId
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> tzS2RangeFileFormat.createSuffixTableValue(0b10101, 0b1101));
 
         // Some valid cases.
