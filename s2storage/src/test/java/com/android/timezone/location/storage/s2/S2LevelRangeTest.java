@@ -17,7 +17,8 @@
 package com.android.timezone.location.storage.s2;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -33,12 +34,12 @@ public class S2LevelRangeTest {
         long nextLowCellId = cellId(12, 3, 101);
         long highCellId = cellId(12, 5, 110);
         new S2LevelRange(highCellId, lowCellId);
-        assertThrowsIllegalArgumentException(() -> new S2LevelRange(lowCellId, lowCellId));
+        assertThrows(IllegalArgumentException.class, () -> new S2LevelRange(lowCellId, lowCellId));
         new S2LevelRange(lowCellId, nextLowCellId);
         new S2LevelRange(lowCellId, highCellId);
 
         long highCellIdDifferentLevel = cellId(15, 2, 0);
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> new S2LevelRange(lowCellId, highCellIdDifferentLevel));
     }
 

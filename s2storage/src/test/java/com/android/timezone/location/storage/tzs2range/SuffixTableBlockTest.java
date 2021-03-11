@@ -16,9 +16,8 @@
 
 package com.android.timezone.location.storage.tzs2range;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalStateException;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIndexOutOfBoundsException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -57,7 +56,7 @@ public class SuffixTableBlockTest {
 
         SuffixTableWriter suffixTableWriter =
                 SuffixTableWriter.createPopulated(fileFormat, suffixTableSharedData);
-        assertThrowsIllegalStateException(suffixTableWriter::close);
+        assertThrows(IllegalStateException.class, suffixTableWriter::close);
     }
 
     @Test
@@ -82,12 +81,14 @@ public class SuffixTableBlockTest {
         {
             SuffixTableRange badStartCellId =
                     new SuffixTableRange(invalidStartCellId, validEndCellId, 1);
-            assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(badStartCellId));
+            assertThrows(IllegalArgumentException.class,
+                    () -> suffixTableWriter.addRange(badStartCellId));
         }
         {
             SuffixTableRange badEndCellId =
                     new SuffixTableRange(validStartCellId, invalidEndCellId, 1);
-            assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(badEndCellId));
+            assertThrows(IllegalArgumentException.class,
+                    () -> suffixTableWriter.addRange(badEndCellId));
         }
     }
 
@@ -118,7 +119,8 @@ public class SuffixTableBlockTest {
                 2);
         suffixTableWriter.addRange(suffixTableRange2);
 
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange2));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange2));
 
         // Try similar checks at the top end of the table.
         SuffixTableRange suffixTableRange3 = new SuffixTableRange(
@@ -127,9 +129,12 @@ public class SuffixTableBlockTest {
                 3);
         suffixTableWriter.addRange(suffixTableRange3);
 
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange1));
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange2));
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange3));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange1));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange2));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange3));
 
         // Now "complete" the table: there can be no entry after this one.
         SuffixTableRange suffixTableRange4 = new SuffixTableRange(
@@ -138,12 +143,17 @@ public class SuffixTableBlockTest {
                 4);
         suffixTableWriter.addRange(suffixTableRange4);
 
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange4));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange4));
 
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange1));
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange2));
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange3));
-        assertThrowsIllegalArgumentException(() -> suffixTableWriter.addRange(suffixTableRange4));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange1));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange2));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange3));
+        assertThrows(IllegalArgumentException.class,
+                () -> suffixTableWriter.addRange(suffixTableRange4));
     }
 
     @Test
@@ -156,8 +166,10 @@ public class SuffixTableBlockTest {
         assertEquals(tablePrefix, suffixTableBlock.getPrefix());
         assertNull(suffixTableBlock.findEntryByCellId(fileFormat.createCellId(tablePrefix, 1)));
         assertEquals(0, suffixTableBlock.getEntryCount());
-        assertThrowsIndexOutOfBoundsException(() -> suffixTableBlock.getEntryByIndex(0));
-        assertThrowsIndexOutOfBoundsException(() -> suffixTableBlock.getEntryByIndex(1));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> suffixTableBlock.getEntryByIndex(0));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> suffixTableBlock.getEntryByIndex(1));
     }
 
     @Test
@@ -221,8 +233,10 @@ public class SuffixTableBlockTest {
                 findEntryByCellId(fileFormat, suffixTableBlock, tablePrefix, maxSuffix));
 
         assertEquals(4, suffixTableBlock.getEntryCount());
-        assertThrowsIndexOutOfBoundsException(() -> suffixTableBlock.getEntryByIndex(-1));
-        assertThrowsIndexOutOfBoundsException(() -> suffixTableBlock.getEntryByIndex(4));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> suffixTableBlock.getEntryByIndex(-1));
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> suffixTableBlock.getEntryByIndex(4));
 
         assertEquals(entry1, suffixTableBlock.getEntryByIndex(0).getSuffixTableRange());
         assertEquals(entry2, suffixTableBlock.getEntryByIndex(1).getSuffixTableRange());
@@ -254,11 +268,9 @@ public class SuffixTableBlockTest {
         SuffixTableBlock suffixTableBlock =
                 SuffixTableBlock.createPopulated(fileFormat, blockReadback.getBlockData());
 
-        assertThrowsIllegalArgumentException(
-                () -> suffixTableBlock.findEntryByCellId(
+        assertThrows(IllegalArgumentException.class, () -> suffixTableBlock.findEntryByCellId(
                         fileFormat.createCellId(tablePrefix - 1, 0)));
-        assertThrowsIllegalArgumentException(
-                () -> suffixTableBlock.findEntryByCellId(
+        assertThrows(IllegalArgumentException.class, () -> suffixTableBlock.findEntryByCellId(
                         fileFormat.createCellId(tablePrefix + 1, 0)));
     }
 
