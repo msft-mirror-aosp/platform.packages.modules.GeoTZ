@@ -23,6 +23,10 @@ import com.android.timezone.location.data_pipeline.steps.Types.TzS2Range;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Ranges;
 import com.android.timezone.location.tools.proto.GeotzProtos;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +58,21 @@ public final class CreateTzS2ProtoDataFile {
         this.mOutputProtoFormat = Objects.requireNonNull(outputProtoFormat);
     }
 
+    private static class Arguments {
+        @Parameter(names = "--input-file",
+                description = "The input TzS2Ranges file to parse",
+                required = true,
+                converter = FileConverter.class)
+        File inputFile;
+
+        @Parameter(names = "--output-file",
+                description = "The output file to produce",
+                required = true,
+                converter = FileConverter.class)
+        File outputFile;
+
+    }
+
     /**
      * See {@link CreateTzS2ProtoDataFile} for the purpose of this class.
      *
@@ -64,10 +83,15 @@ public final class CreateTzS2ProtoDataFile {
      * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputFile = new File(args[0]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+        File inputFile = arguments.inputFile;
         ProtoStorageFormat inputStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
-        File outputFile = new File(args[1]);
+        File outputFile = arguments.outputFile;
         // This is currently assumed by the tool that reads the file.
         ProtoStorageFormat outputStorageFormat = ProtoStorageFormat.TEXT;
 

@@ -16,7 +16,8 @@
 
 package com.android.timezone.location.storage.io;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -142,26 +143,40 @@ public class TypedStreamsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TypedOutputStream tos = new TypedOutputStream(baos);
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(1, 0x00000000000001FFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(1, 0xE0000000000000FFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(1, 0x00000000000001FFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(1, 0xE0000000000000FFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(2, 0x000000000001FFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(2, 0xE00000000000FFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(2, 0x000000000001FFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(2, 0xE00000000000FFFFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(3, 0x0000000001FFFFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(3, 0xE000000000FFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(3, 0x0000000001FFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(3, 0xE000000000FFFFFFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(4, 0x00000001FFFFFFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(4, 0xE0000000FFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(4, 0x00000001FFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(4, 0xE0000000FFFFFFFFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(5, 0x000001FFFFFFFFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(5, 0xE00000FFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(5, 0x000001FFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(5, 0xE00000FFFFFFFFFFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(6, 0x0001FFFFFFFFFFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(6, 0xE000FFFFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(6, 0x0001FFFFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeVarByteValue(6,
+                0xE000FFFFFFFFFFFFL));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(7, 0x01FFFFFFFFFFFFFFL));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(7, 0xE0FFFFFFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(7, 0x01FFFFFFFFFFFFFFL));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(7, 0xE0FFFFFFFFFFFFFFL));
     }
 
 
@@ -170,17 +185,19 @@ public class TypedStreamsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TypedOutputStream tos = new TypedOutputStream(baos);
 
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(0, Long.MAX_VALUE));
-        assertThrowsIllegalArgumentException(() -> tos.writeVarByteValue(9, Long.MAX_VALUE));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(0, Long.MAX_VALUE));
+        assertThrows(IllegalArgumentException.class,
+                () -> tos.writeVarByteValue(9, Long.MAX_VALUE));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeByte(Byte.MIN_VALUE - 1));
-        assertThrowsIllegalArgumentException(() -> tos.writeByte(Byte.MAX_VALUE + 1));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeByte(Byte.MIN_VALUE - 1));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeByte(Byte.MAX_VALUE + 1));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeChar(Character.MIN_VALUE - 1));
-        assertThrowsIllegalArgumentException(() -> tos.writeChar(Character.MAX_VALUE + 1));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeChar(Character.MIN_VALUE - 1));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeChar(Character.MAX_VALUE + 1));
 
-        assertThrowsIllegalArgumentException(() -> tos.writeUnsignedByte(-1));
-        assertThrowsIllegalArgumentException(() -> tos.writeUnsignedByte(256));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeUnsignedByte(-1));
+        assertThrows(IllegalArgumentException.class, () -> tos.writeUnsignedByte(256));
 
         assertEquals(0, baos.toByteArray().length);
     }

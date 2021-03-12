@@ -64,8 +64,8 @@ public final class CreateTzS2ProtoDataFileTest {
         Path outputFilePath = outputDirPath.resolve("tzs2datafile.prototxt");
 
         String[] args = {
-                inputFilePath.toAbsolutePath().toString(),
-                outputFilePath.toAbsolutePath().toString()
+                "--input-file", inputFilePath.toAbsolutePath().toString(),
+                "--output-file", outputFilePath.toAbsolutePath().toString()
         };
         CreateTzS2ProtoDataFile.main(args);
 

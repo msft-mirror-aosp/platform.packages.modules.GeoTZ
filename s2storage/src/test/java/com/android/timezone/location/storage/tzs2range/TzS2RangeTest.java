@@ -17,8 +17,9 @@
 package com.android.timezone.location.storage.tzs2range;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -36,8 +37,10 @@ public class TzS2RangeTest {
         long startCellId = cellId(12, 5, 1);
         long endCellId = cellId(12, 5, 2);
         List<String> tzIds = listOf("One", "Two");
-        assertThrowsIllegalArgumentException(() -> new TzS2Range(startCellId, startCellId, tzIds));
-        assertThrowsIllegalArgumentException(() -> new TzS2Range(endCellId, startCellId, tzIds));
+        assertThrows(IllegalArgumentException.class,
+                () -> new TzS2Range(startCellId, startCellId, tzIds));
+        assertThrows(IllegalArgumentException.class,
+                () -> new TzS2Range(endCellId, startCellId, tzIds));
     }
 
     @Test

@@ -22,6 +22,10 @@ import com.android.timezone.location.data_pipeline.steps.Types.ProtoStorageForma
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Range;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Ranges;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,22 +70,46 @@ public final class MergeTzS2Ranges {
         this.mProtoStorageFormat = Objects.requireNonNull(protoStorageFormat);
     }
 
+    private static class Arguments {
+
+        @Parameter(names = "--input",
+                description = "The input directory containing the TzS2Ranges files",
+                required = true,
+                converter = FileConverter.class)
+        File inputDir;
+
+        @Parameter(names = "--num-threads",
+                description = "The number of threads to use",
+                required = true)
+        int numThreads;
+
+        @Parameter(names = "--working-dir",
+                description = "A working dir(for storage of intermediate files)",
+                required = true,
+                converter = FileConverter.class)
+        File workingDir;
+
+        @Parameter(names = "--output-file",
+                description = "The output file to store the combined TzS2Ranges file",
+                required = true,
+                converter = FileConverter.class)
+        File outputFile;
+
+    }
+
     /**
      * See {@link MergeTzS2Ranges} for the purpose of this class.
-     *
-     * <p>Arguments:
-     * <ol>
-     *     <li>The input directory containing the {@link TzS2Ranges} files.</li>
-     *     <li>The number of threads to use</li>
-     *     <li>A working dir (for storage of intermediate files)</li>
-     *     <li>The output file to store the combined {@link TzS2Ranges} file.</li>
-     * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputDir = new File(args[0]);
-        int threads = Integer.parseInt(args[1]);
-        File workingDir = new File(args[2]);
-        File outputFile = new File(args[3]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+        File inputDir = arguments.inputDir;
+        int threads = arguments.numThreads;
+        File workingDir = arguments.workingDir;
+        File outputFile = arguments.outputFile;
         ProtoStorageFormat protoStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
