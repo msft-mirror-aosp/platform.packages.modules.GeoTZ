@@ -16,11 +16,12 @@
 
 package com.android.timezone.location.storage.tzs2range.write;
 
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -61,11 +62,8 @@ public class PushBackIteratorTest {
         assertTrue(iterator.hasNext());
         assertEquals("Four", iterator.next());
         assertFalse(iterator.hasNext());
-        try {
-            iterator.next();
-            fail();
-        } catch (NoSuchElementException expected) {
-        }
+
+        assertThrows(NoSuchElementException.class, iterator::next);
 
         // iterator = Empty
         iterator.pushBack("Four");
@@ -79,25 +77,14 @@ public class PushBackIteratorTest {
         PushBackIterator<String> iterator = new PushBackIterator<>(values.iterator());
         assertEquals("One", iterator.next());
 
-        try {
-            iterator.remove();
-            fail();
-        } catch (UnsupportedOperationException expected) {
-        }
+        assertThrows(UnsupportedOperationException.class, iterator::remove);
 
         iterator.pushBack("One");
         iterator.pushBack("Zero");
-        try {
-            iterator.remove();
-            fail();
-        } catch (UnsupportedOperationException expected) {
-        }
+
+        assertThrows(UnsupportedOperationException.class, iterator::remove);
 
         assertEquals("Zero", iterator.next());
-        try {
-            iterator.remove();
-            fail();
-        } catch (UnsupportedOperationException expected) {
-        }
+        assertThrows(UnsupportedOperationException.class, iterator::remove);
     }
 }

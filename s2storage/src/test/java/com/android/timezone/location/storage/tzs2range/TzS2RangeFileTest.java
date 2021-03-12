@@ -18,6 +18,7 @@ package com.android.timezone.location.storage.tzs2range;
 
 import static com.android.timezone.location.storage.s2.S2Support.FACE_BIT_COUNT;
 import static com.android.timezone.location.storage.testing.TestSupport.listOf;
+
 import static org.junit.Assert.assertEquals;
 
 import com.android.timezone.location.storage.tzs2range.read.TzS2RangeFileReader;

@@ -16,7 +16,8 @@
 
 package com.android.timezone.location.storage.block;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIndexOutOfBoundsException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -109,10 +110,10 @@ public class BlockFileTest {
 
         try (BlockFileReader bfr = BlockFileReader.open(false, blockFile, magic, 2)) {
 
-            assertThrowsIndexOutOfBoundsException(() -> bfr.getBlockInfo(-1));
-            assertThrowsIndexOutOfBoundsException(() -> bfr.getBlock(-1));
-            assertThrowsIndexOutOfBoundsException(() -> bfr.getBlockInfo(blockCount));
-            assertThrowsIndexOutOfBoundsException(() -> bfr.getBlock(blockCount));
+            assertThrows(IndexOutOfBoundsException.class, () -> bfr.getBlockInfo(-1));
+            assertThrows(IndexOutOfBoundsException.class, () -> bfr.getBlock(-1));
+            assertThrows(IndexOutOfBoundsException.class, () -> bfr.getBlockInfo(blockCount));
+            assertThrows(IndexOutOfBoundsException.class, () -> bfr.getBlock(blockCount));
         }
     }
 

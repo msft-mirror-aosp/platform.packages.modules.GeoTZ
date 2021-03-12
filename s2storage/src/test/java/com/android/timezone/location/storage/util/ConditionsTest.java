@@ -16,8 +16,7 @@
 
 package com.android.timezone.location.storage.util;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalStateException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
 
 import org.junit.Test;
 
@@ -34,9 +33,9 @@ public class ConditionsTest {
             Conditions.checkStateInRange("foo", validValue, "min", minIncl, "max", maxIncl);
         }
         for (int invalidValue : invalidValues) {
-            assertThrowsIllegalStateException(
+            assertThrows(IllegalStateException.class,
                     () -> Conditions.checkStateInRange("foo", invalidValue, "min", minIncl, "max",
-                            maxIncl));
+                                maxIncl));
         }
     }
 
@@ -52,10 +51,10 @@ public class ConditionsTest {
             Conditions.checkArgInRange("foo", validValue, minIncl, maxIncl);
         }
         for (int invalidValue : invalidValues) {
-            assertThrowsIllegalArgumentException(
+            assertThrows(IllegalArgumentException.class,
                     () -> Conditions.checkArgInRange("foo", invalidValue, "min", minIncl, "max",
-                            maxIncl));
-            assertThrowsIllegalArgumentException(
+                                maxIncl));
+            assertThrows(IllegalArgumentException.class,
                     () -> Conditions.checkArgInRange("foo", invalidValue, minIncl, maxIncl));
         }
     }

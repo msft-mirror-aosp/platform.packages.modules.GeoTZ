@@ -17,7 +17,8 @@
 package com.android.timezone.location.storage.s2;
 
 import static com.android.timezone.location.storage.s2.S2Support.cellId;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class SortedS2RangesTest {
                 cellId(s2Level, 1, 1001));
         S2LevelRange range1 = new S2LevelRange(cellId(s2Level, 1, 1001),
                 cellId(s2Level, 1, 1002));
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> SortedS2Ranges.createFromSorted(s2Level, range1, range0));
     }
 
@@ -59,7 +60,7 @@ public class SortedS2RangesTest {
     @Test
     public void testOverlapsIllegal() {
         int s2Level = 15;
-        assertThrowsIllegalArgumentException(() -> SortedS2Ranges.createFromSorted(s2Level,
+        assertThrows(IllegalArgumentException.class, () -> SortedS2Ranges.createFromSorted(s2Level,
                 new S2LevelRange(cellId(s2Level, 1, 1000), cellId(s2Level, 1, 1002)),
                 new S2LevelRange(cellId(s2Level, 1, 1001), cellId(s2Level, 1, 1002))
         ));
@@ -69,7 +70,7 @@ public class SortedS2RangesTest {
     public void testMixedLevelsIllegal() {
         S2LevelRange level16Range = new S2LevelRange(cellId(16, 1, 1000), cellId(16, 1, 1001));
         int s2Level = 15;
-        assertThrowsIllegalArgumentException(
+        assertThrows(IllegalArgumentException.class,
                 () -> SortedS2Ranges.createFromSorted(s2Level, level16Range));
     }
 }

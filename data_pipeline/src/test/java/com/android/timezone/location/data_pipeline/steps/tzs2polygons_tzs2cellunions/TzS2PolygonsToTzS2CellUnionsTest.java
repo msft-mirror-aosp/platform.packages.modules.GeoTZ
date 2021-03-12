@@ -68,10 +68,10 @@ public final class TzS2PolygonsToTzS2CellUnionsTest {
         final int s2Level = 16;
 
         String[] args = {
-                inputDirPath.toAbsolutePath().toString(),
-                Integer.toString(threads),
-                outputDirPath.toAbsolutePath().toString(),
-                Integer.toString(s2Level),
+                "--input", inputDirPath.toAbsolutePath().toString(),
+                "--num-threads", Integer.toString(threads),
+                "--output", outputDirPath.toAbsolutePath().toString(),
+                "--max-s2-level", Integer.toString(s2Level),
         };
         TzS2PolygonsToTzS2CellUnions.main(args);
 
