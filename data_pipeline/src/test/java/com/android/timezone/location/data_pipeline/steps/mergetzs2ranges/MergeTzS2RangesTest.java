@@ -80,10 +80,10 @@ public final class MergeTzS2RangesTest {
         Path actualFilePath = actualDirPath.resolve(outputFileName);
 
         String[] args = {
-                inputDirPath.toAbsolutePath().toString(),
-                Integer.toString(threads),
-                workingDirPath.toAbsolutePath().toString(),
-                actualFilePath.toAbsolutePath().toString(),
+                "--input", inputDirPath.toAbsolutePath().toString(),
+                "--num-threads", Integer.toString(threads),
+                "--working-dir", workingDirPath.toAbsolutePath().toString(),
+                "--output-file", actualFilePath.toAbsolutePath().toString(),
         };
         MergeTzS2Ranges.main(args);
 

@@ -21,6 +21,7 @@ java_library_host {
         "geotz_common",
         "geotz_s2storage_tools_protos",
         "geotz_s2storage_rw",
+        "jcommander",
         "libprotobuf-java-full",
     ],
 }
