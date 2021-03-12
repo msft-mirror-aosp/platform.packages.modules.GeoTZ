@@ -16,9 +16,10 @@
 
 package com.android.timezone.location.storage.table.packed;
 
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalArgumentException;
-import static com.android.timezone.location.storage.testing.TestSupport.assertThrowsIllegalStateException;
+import static com.android.timezone.location.storage.testing.MoreAsserts.assertThrows;
+import static com.android.timezone.location.storage.testing.TestSupport.listOf;
 import static com.android.timezone.location.storage.testing.TestSupport.setOf;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -134,10 +135,10 @@ public class PackedTableReaderWriterTest {
 
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
         PackedTableReader tableReader = new PackedTableReader(blockData);
-        assertThrowsIllegalStateException(() -> tableReader.getEntry(maxKey).getIntValue());
+        assertThrows(IllegalStateException.class, () -> tableReader.getEntry(maxKey).getIntValue());
         assertEquals(maxRepresentableValue, tableReader.getEntry(maxKey).getLongValue());
 
-        assertThrowsIllegalStateException(() -> tableReader.getEntry(minKey).getIntValue());
+        assertThrows(IllegalStateException.class, () -> tableReader.getEntry(minKey).getIntValue());
         assertEquals(minRepresentableValue, tableReader.getEntry(minKey).getLongValue());
     }
 
@@ -150,8 +151,10 @@ public class PackedTableReaderWriterTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         boolean signedValue = false;
         PackedTableWriter writer = PackedTableWriter.create(baos, 5, 9, signedValue, null);
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(1, maxUnsignedInt + 1));
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(1, minUnsignedInt - 1));
+
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, maxUnsignedInt + 1));
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, minUnsignedInt - 1));
+
         writer.addEntry(1, maxUnsignedInt);
         writer.addEntry(2, minUnsignedInt);
         writer.close();
@@ -172,8 +175,10 @@ public class PackedTableReaderWriterTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         boolean signedValue = true;
         PackedTableWriter writer = PackedTableWriter.create(baos, 5, 8, signedValue, null);
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(1, maxSignedInt + 1));
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(1, minSignedInt - 1));
+
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, maxSignedInt + 1));
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, minSignedInt - 1));
+
         writer.addEntry(1, maxSignedInt);
         writer.addEntry(2, minSignedInt);
         writer.close();
@@ -191,8 +196,10 @@ public class PackedTableReaderWriterTest {
         boolean signedValue = true;
         PackedTableWriter writer = PackedTableWriter.create(baos, 5, 8, signedValue, null);
         writer.addEntry(100, 1);
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(1, 2));
-        assertThrowsIllegalArgumentException(() -> writer.addEntry(99, 2));
+
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(1, 2));
+        assertThrows(IllegalArgumentException.class, () -> writer.addEntry(99, 2));
+
         writer.addEntry(100, 2);
         writer.addEntry(101, 3);
         writer.close();
@@ -283,10 +290,10 @@ public class PackedTableReaderWriterTest {
         assertArrayEquals(new byte[0], tableReader.getSharedData());
 
         int negativeKey = -1;
-        assertThrowsIllegalArgumentException(() -> tableReader.getEntry(negativeKey));
+        assertThrows(IllegalArgumentException.class, () -> tableReader.getEntry(negativeKey));
 
         int keyTooBig = (int) BitwiseUtils.maxUnsignedValue(keyBits) + 1;
-        assertThrowsIllegalArgumentException(() -> tableReader.getEntry(keyTooBig));
+        assertThrows(IllegalArgumentException.class, () -> tableReader.getEntry(keyTooBig));
     }
 
     @Test
@@ -340,7 +347,7 @@ public class PackedTableReaderWriterTest {
         // findIntValueEntry
         PackedTableReader.Entry oneOfMany =
                 tableReader.findIntValueEntry(new IntValueEntryKeyMatcher(5));
-        List<Integer> expectedValuesForKey = Arrays.asList(2, 3, 4, 5, 6, 7, 8);
+        List<Integer> expectedValuesForKey = listOf(2, 3, 4, 5, 6, 7, 8);
         assertTrue(oneOfMany.getIntValue() + " not expected",
                 expectedValuesForKey.contains(oneOfMany.getIntValue()));
         PackedTableReader.Entry currentEntry = oneOfMany;
@@ -424,7 +431,7 @@ public class PackedTableReaderWriterTest {
         PackedTableReader.Entry entry = tableReader.getEntry(3);
         assertEquals(3, entry.getKey());
         assertEquals(1, entry.getIndex());
-        assertThrowsIllegalStateException(entry::getIntValue);
+        assertThrows(IllegalStateException.class, entry::getIntValue);
         assertEquals(4567890, entry.getLongValue());
     }
 

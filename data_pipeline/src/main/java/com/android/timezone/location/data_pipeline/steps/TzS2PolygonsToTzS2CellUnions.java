@@ -24,6 +24,9 @@ import com.android.timezone.location.data_pipeline.steps.Types.TzS2CellUnion;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2Polygons;
 import com.android.timezone.location.data_pipeline.util.NamedFuture;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.FileConverter;
 import com.google.common.base.Stopwatch;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2CellUnion;
@@ -74,22 +77,45 @@ public final class TzS2PolygonsToTzS2CellUnions {
         this.mProtoStorageFormat = Objects.requireNonNull(protoStorageFormat);
     }
 
+    private static class Arguments {
+        @Parameter(names = "--input",
+                description = "The input directory containing the TzS2Polygons files",
+                required = true,
+                converter = FileConverter.class)
+        File inputDir;
+
+        @Parameter(names = "--num-threads",
+                description = "The number of threads to use",
+                required = true)
+        int numThreads;
+
+        @Parameter(names = "--output",
+                description = "The output directory to store the TzS2CellUnion files",
+                required = true,
+                converter = FileConverter.class)
+        File outputDir;
+
+        @Parameter(names = "--max-s2-level",
+                description = "The maximum S2 level of the cells to include in the S2 cell unions",
+                required = true)
+        int maxS2Level;
+
+    }
+
     /**
      * See {@link TzS2PolygonsToTzS2CellUnions} for the purpose of this class.
-     *
-     * <p>Arguments:
-     * <ol>
-     *     <li>The input directory containing the {@link TzS2Polygons} files.</li>
-     *     <li>The number of threads to use</li>
-     *     <li>The output directory to store the {@link TzS2CellUnion} files.</li>
-     *     <li>The maximum S2 level of the cells to include in the S2 cell unions.</li>
-     * </ol>
      */
     public static void main(String[] args) throws Exception {
-        File inputDir = new File(args[0]);
-        int threads = Integer.parseInt(args[1]);
-        File outputDir = new File(args[2]);
-        int maxS2Level = Integer.parseInt(args[3]);
+        Arguments arguments = new Arguments();
+        JCommander.newBuilder()
+                .addObject(arguments)
+                .build()
+                .parse(args);
+
+        File inputDir = arguments.inputDir;
+        int threads = arguments.numThreads;
+        File outputDir = arguments.outputDir;
+        int maxS2Level = arguments.maxS2Level;
         ProtoStorageFormat protoStorageFormat = Types.DEFAULT_PROTO_STORAGE_FORMAT;
 
         outputDir.mkdirs();
