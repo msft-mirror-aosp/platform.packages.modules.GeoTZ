@@ -13,6 +13,10 @@
 // limitations under the License.
 
 // A library for use on device or host to lookup time zones for a location.
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library {
     name: "geotz_lookup",
     srcs: ["src/main/java/**/*.java"],
