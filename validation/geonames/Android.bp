@@ -13,6 +13,10 @@
 // limitations under the License.
 
 // Proto library
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library_host {
     name: "geotz_validation_protos",
     proto: {
@@ -36,4 +40,3 @@ java_binary_host {
         "tzids",
     ],
 }
-
