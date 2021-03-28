@@ -14,6 +14,10 @@
 
 // A library that can be incorporated into an Application to provide an Offline
 // LocationTimeZoneProvider service.
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 java_library {
     name: "offlinelocationtimezoneprovider",
     srcs: ["src/main/java/**/*.java"],
