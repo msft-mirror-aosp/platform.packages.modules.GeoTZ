@@ -141,7 +141,6 @@ java_test_host {
         "geotz_data_pipeline",
         "junit",
     ],
-    test_suites: ["general-tests"],
 }
 
 // A host library containing geojson-jackson and all its dependencies.
