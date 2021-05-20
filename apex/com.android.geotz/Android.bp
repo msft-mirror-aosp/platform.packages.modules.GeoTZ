@@ -28,10 +28,7 @@ apex_defaults {
     // module.
     file_contexts: ":com.android.geotz-file_contexts",
 
-    // This name is hardcoded on Android S with associated AndroidManifest.xml
-    // entries in the system server. Do not remove until all releases use an
-    // APK.
-    java_libs: ["geotz"],
+    systemserverclasspath_fragments: ["com.android.geotz-systemserverclasspath-fragment"],
 
     // Shared signing information.
     key: "com.android.geotz.key",
@@ -47,6 +44,16 @@ apex_key {
 android_app_certificate {
     name: "com.android.geotz.certificate",
     certificate: "com.android.geotz",
+}
+
+// Encapsulate the contributions made by the com.android.geotz to the systemserverclasspath.
+systemserverclasspath_fragment {
+    name: "com.android.geotz-systemserverclasspath-fragment",
+    // This name is hardcoded on Android S with associated AndroidManifest.xml
+    // entries in the system server. Do not remove until all releases use an
+    // APK.
+    contents: ["geotz"],
+    apex_available: ["com.android.geotz"],
 }
 
 // The definition for the real (not test) geotz APEX.
@@ -70,6 +77,8 @@ java_library {
         "offlinelocationtimezoneprovider",
     ],
     sdk_version: "system_current",
+    // TODO(b/188773212): force dex compilation for inclusion in bootclasspath_fragment.
+    compile_dex: true,
     apex_available: [
         "com.android.geotz",
     ],
