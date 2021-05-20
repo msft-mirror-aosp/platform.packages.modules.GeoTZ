@@ -301,7 +301,7 @@ public final class OfflineLocationTimeZoneDelegate {
                 String unexpectedStateDebugInfo = "Unexpected call to onActiveListeningResult(),"
                         + " activeListeningResult=" + activeListeningResult
                         + ", currentMode=" + currentMode;
-                handleUnexpectedCallback(unexpectedStateDebugInfo);
+                handleUnexpectedLocationCallback(unexpectedStateDebugInfo);
                 return;
             }
 
@@ -343,7 +343,7 @@ public final class OfflineLocationTimeZoneDelegate {
                 String unexpectedStateDebugInfo = "Unexpected call to onPassiveListeningResult(),"
                         + " passiveListeningResult=" + passiveListeningResult
                         + ", currentMode=" + currentMode;
-                handleUnexpectedCallback(unexpectedStateDebugInfo);
+                handleUnexpectedLocationCallback(unexpectedStateDebugInfo);
                 return;
             }
             logDebug("onPassiveListeningResult()"
@@ -416,7 +416,7 @@ public final class OfflineLocationTimeZoneDelegate {
             Mode currentMode = mCurrentMode.get();
             if (currentMode.mModeEnum != MODE_STARTED
                     || currentMode.mListenMode != LOCATION_LISTEN_MODE_PASSIVE) {
-                handleUnexpectedCallback("Unexpected call to onPassiveListeningEnded()"
+                handleUnexpectedLocationCallback("Unexpected call to onPassiveListeningEnded()"
                         + ", currentMode=" + currentMode);
                 return;
             }
@@ -555,10 +555,11 @@ public final class OfflineLocationTimeZoneDelegate {
     }
 
     @GuardedBy("mLock")
-    private void handleUnexpectedCallback(@NonNull String debugInfo) {
-        // To help track down unexpected behavior, this fails hard.
-        logWarn(debugInfo);
-        throw new IllegalStateException(debugInfo);
+    private void handleUnexpectedLocationCallback(@NonNull String debugInfo) {
+        // Unexpected location callbacks can occur when location listening is cancelled, but a
+        // location is already available (e.g. the callback is already invoked but blocked or
+        // sitting in a handler queue). This is logged but generally ignored.
+        logDebug(debugInfo);
     }
 
     @GuardedBy("mLock")
