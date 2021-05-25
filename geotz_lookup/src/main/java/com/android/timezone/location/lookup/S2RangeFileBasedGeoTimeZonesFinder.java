@@ -114,6 +114,11 @@ final class S2RangeFileBasedGeoTimeZonesFinder extends GeoTimeZonesFinder {
 
         @Override
         public String toString() {
+            return "LocationToken{<redacted>}";
+        }
+
+        @Override
+        public String toPiiString() {
             return "LocationToken{"
                     + "mS2CellId=" + mS2CellId
                     + '}';

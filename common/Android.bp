@@ -22,3 +22,32 @@ java_library_host {
     name: "geotz_host_common",
     srcs: ["host/main/java/**/*.java"],
 }
+
+// Code intended for device or host usage.
+java_library {
+    name: "geotz_common",
+    host_supported: true,
+    srcs: ["src/main/java/**/*.java"],
+    libs: ["androidx.annotation_annotation"],
+    sdk_version: "current",
+    min_sdk_version: "current",
+    apex_available: [
+        "com.android.geotz",
+    ],
+}
+
+// Device side tests for the geotz_common code.
+android_test {
+    name: "GeotzCommonTests",
+    srcs: ["src/test/java/**/*.java"],
+    manifest: "src/test/AndroidManifest.xml",
+    sdk_version: "current",
+    min_sdk_version: "current",
+    static_libs: [
+        "androidx.test.runner",
+        "geotz_lookup",
+        "junit",
+        "truth-prebuilt",
+    ],
+    test_suites: ["general-tests"],
+}
