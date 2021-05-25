@@ -16,6 +16,8 @@
 
 package com.android.timezone.location.provider.core;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.function.Function;
 
 /**
  * Tests for {@link ReferenceWithHistory}.
@@ -94,6 +97,27 @@ public class ReferenceWithHistoryTest {
         // We should have hit the limit of "2 history values retained per key".
         setAndCompareReturnValue(referenceWithHistory, reference, "V3");
         assertEquals(2, referenceWithHistory.getHistoryCount());
+    }
+
+    @Test
+    public void testDumpWithFunction() {
+        // Create a reference that will retain 2 history values.
+        Function<String, String> dumpValueToStringFunction = x -> ">" + x + "<";
+        ReferenceWithHistory<String> referenceWithHistory =
+                new ReferenceWithHistory<>(2 /* history */, dumpValueToStringFunction);
+
+        // Set values.
+        referenceWithHistory.set("V1");
+        referenceWithHistory.set("V2");
+
+        // dump() should use dumpValueToStringFunction.
+        String dumpString = dumpReferenceWithHistory(referenceWithHistory);
+        assertThat(dumpString).contains(">V1<");
+        assertThat(dumpString).contains(">V2<");
+
+        // toString() should just use toString().
+        assertThat(referenceWithHistory.toString()).contains("V2");
+        assertThat(referenceWithHistory.toString()).doesNotContain(">V2<");
     }
 
     /**
