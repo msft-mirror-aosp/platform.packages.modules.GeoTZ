@@ -17,7 +17,8 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+// Code intended for host usage only.
 java_library_host {
-    name: "geotz_common",
-    srcs: ["src/main/java/**/*.java"],
+    name: "geotz_host_common",
+    srcs: ["host/main/java/**/*.java"],
 }
