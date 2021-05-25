@@ -26,6 +26,7 @@ java_library {
         "androidx.annotation_annotation",
     ],
     static_libs: [
+        "geotz_common",
         "geotz_lookup",
     ],
     apex_available: [
