@@ -26,6 +26,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.timezone.location.common.PiiLoggable;
+import com.android.timezone.location.common.PiiLoggables;
 import com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.ListenModeEnum;
 
 import java.util.Objects;
@@ -62,7 +64,7 @@ import java.util.Objects;
  *       - when the provider's service is destroyed, perhaps as part of the current user changing
  * </pre>
  */
-class Mode {
+class Mode implements PiiLoggable {
 
     @IntDef({ MODE_STOPPED, MODE_STARTED, MODE_FAILED, MODE_DESTROYED })
     @interface ModeEnum {}
@@ -111,7 +113,7 @@ class Mode {
      * Debug information: Information about why the mode was entered.
      */
     @NonNull
-    private final String mEntryCause;
+    private final PiiLoggable mEntryCause;
 
     /**
      * Used when mModeEnum == {@link #MODE_STARTED}. The {@link Cancellable} that can be
@@ -120,15 +122,15 @@ class Mode {
     @Nullable
     private final Cancellable mLocationListenerCancellable;
 
-    Mode(@ModeEnum int modeEnum, @NonNull String entryCause) {
+    Mode(@ModeEnum int modeEnum, @NonNull PiiLoggable entryCause) {
         this(modeEnum, entryCause, LOCATION_LISTEN_MODE_NA, null);
     }
 
-    Mode(@ModeEnum int modeEnum, @NonNull String entryCause, @ListenModeEnum int listenMode,
+    Mode(@ModeEnum int modeEnum, @NonNull PiiLoggable entryCause, @ListenModeEnum int listenMode,
             @Nullable Cancellable listeningCancellable) {
         mModeEnum = validateModeEnum(modeEnum);
         mListenMode = validateListenModeEnum(modeEnum, listenMode);
-        mEntryCause = entryCause;
+        mEntryCause = Objects.requireNonNull(entryCause);
         mLocationListenerCancellable = listeningCancellable;
 
         // Information useful for logging / debugging.
@@ -138,7 +140,7 @@ class Mode {
     /** Returns the stopped mode which is the starting state for a provider. */
     @NonNull
     static Mode createStoppedMode() {
-        return new Mode(MODE_STOPPED, "init" /* entryCause */);
+        return new Mode(MODE_STOPPED, PiiLoggables.fromString("init") /* entryCause */);
     }
 
     /**
@@ -153,13 +155,24 @@ class Mode {
     }
 
     @Override
+    public String toPiiString() {
+        String template = toStringTemplate();
+        return PiiLoggables.formatPiiString(template, mEntryCause);
+    }
+
+    @Override
     public String toString() {
+        String template = toStringTemplate();
+        return String.format(template, mEntryCause);
+    }
+
+    private String toStringTemplate() {
         return "Mode{"
                 + "mModeEnum=" + prettyPrintModeEnum(mModeEnum)
                 + ", mListenMode=" + prettyPrintListenModeEnum(mListenMode)
                 + ", mCreationElapsedRealtimeMillis="
                 + formatElapsedRealtimeMillis(mCreationElapsedRealtimeMillis)
-                + ", mEntryCause={" + mEntryCause + '}'
+                + ", mEntryCause={%s}"
                 + ", mLocationListenerCancellable=" + mLocationListenerCancellable
                 + '}';
     }
