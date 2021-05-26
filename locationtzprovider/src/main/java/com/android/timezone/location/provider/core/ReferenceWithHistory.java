@@ -25,6 +25,8 @@ import androidx.annotation.Nullable;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.ArrayDeque;
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A class that behaves like the following definition, except it stores the history of values set
@@ -57,6 +59,10 @@ final class ReferenceWithHistory<V> {
     /** The maximum number of references to store. */
     private final int mMaxHistorySize;
 
+    /** The function to use to convert a value to a string in {@link #dump(PrintWriter)}. */
+    @NonNull
+    private final Function<? super V, String> mDumpValueFunction;
+
     /** The number of times {@link #set(Object)} has been called. */
     private int mSetCount;
 
@@ -68,10 +74,22 @@ final class ReferenceWithHistory<V> {
      * Creates an instance that records, at most, the specified number of values.
      */
     public ReferenceWithHistory(@IntRange(from = 1) int maxHistorySize) {
+        this(maxHistorySize, String::valueOf);
+    }
+
+    /**
+     * Creates an instance that records, at most, the specified number of values.
+     *
+     * <p>The {@link #dump(PrintWriter)} method will use {@code dumpValueFunction} to format the
+     * values held.
+     */
+    public ReferenceWithHistory(@IntRange(from = 1) int maxHistorySize,
+            Function<? super V, String> dumpValueFunction) {
         if (maxHistorySize < 1) {
             throw new IllegalArgumentException("maxHistorySize < 1: " + maxHistorySize);
         }
-        this.mMaxHistorySize = maxHistorySize;
+        mMaxHistorySize = maxHistorySize;
+        mDumpValueFunction = Objects.requireNonNull(dumpValueFunction);
     }
 
     /** Returns the current value, or {@code null} if it has never been set. */
@@ -120,7 +138,7 @@ final class ReferenceWithHistory<V> {
                 pw.print("@");
                 pw.print(Duration.ofMillis(valueHolder.getReferenceTimeMillis()).toString());
                 pw.print(": ");
-                pw.println(valueHolder.getValue());
+                pw.println(mDumpValueFunction.apply(valueHolder.getValue()));
             }
         }
         pw.flush();
@@ -153,7 +171,6 @@ final class ReferenceWithHistory<V> {
             return mValue;
         }
 
-        @NonNull
         long getReferenceTimeMillis() {
             return mReferenceTimeMillis;
         }
