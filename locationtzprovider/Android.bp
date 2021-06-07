@@ -26,6 +26,7 @@ java_library {
         "androidx.annotation_annotation",
     ],
     static_libs: [
+        "geotz_common",
         "geotz_lookup",
     ],
     apex_available: [
@@ -43,6 +44,7 @@ android_test {
         "androidx.test.runner",
         "junit",
         "offlinelocationtimezoneprovider",
+        "truth-prebuilt",
     ],
     test_suites: ["general-tests"],
 }

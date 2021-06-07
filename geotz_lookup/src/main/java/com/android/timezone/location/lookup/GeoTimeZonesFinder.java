@@ -15,6 +15,8 @@
  */
 package com.android.timezone.location.lookup;
 
+import com.android.timezone.location.common.PiiLoggable;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -87,7 +89,7 @@ public abstract class GeoTimeZonesFinder implements Closeable {
      * <p>Depending on the implementation, it may be cheaper to obtain a {@link LocationToken} than
      * doing a full lookup.
      */
-    public abstract static class LocationToken {
+    public abstract static class LocationToken implements PiiLoggable {
         @Override
         public abstract boolean equals(Object other);
 
