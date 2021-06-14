@@ -20,6 +20,7 @@ package {
 apex_defaults {
     name: "com.android.geotz-defaults",
     updatable: true,
+    generate_hashtree: false,
     // TODO(b/174024269) Change this to the value for S once the API level is
     // final.
     min_sdk_version: "current",
