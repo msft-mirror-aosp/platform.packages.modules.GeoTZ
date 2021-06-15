@@ -158,6 +158,7 @@ public final class OfflineLocationTimeZoneDelegate {
     @Nullable
     private Cancellable mInitializationTimeoutCancellable;
 
+    /** Creates a new instance that uses the supplied {@link Environment}. */
     @NonNull
     public static OfflineLocationTimeZoneDelegate create(@NonNull Environment environment) {
         return new OfflineLocationTimeZoneDelegate(environment);
@@ -173,39 +174,7 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
-    public void onBind() {
-        PiiLoggable entryCause = PiiLoggables.fromString("onBind() called");
-        logDebug(entryCause);
-
-        synchronized (mLock) {
-            Mode currentMode = mCurrentMode.get();
-            if (currentMode.mModeEnum != MODE_STOPPED) {
-                handleUnexpectedStateTransition(
-                        "onBind() called when in unexpected mode=" + currentMode);
-                return;
-            }
-
-            Mode newMode = new Mode(MODE_STOPPED, entryCause);
-            mCurrentMode.set(newMode);
-        }
-    }
-
-    public void onDestroy() {
-        PiiLoggable entryCause = PiiLoggables.fromString("onDestroy() called");
-        logDebug(entryCause);
-
-        synchronized (mLock) {
-            cancelTimeoutsAndLocationCallbacks();
-
-            Mode currentMode = mCurrentMode.get();
-            if (currentMode.mModeEnum == MODE_STARTED) {
-                sendTimeZoneUncertainResultIfNeeded();
-            }
-            Mode newMode = new Mode(MODE_DESTROYED, entryCause);
-            mCurrentMode.set(newMode);
-        }
-    }
-
+    /** Called during {@link android.service.timezone.TimeZoneProviderService#onStartUpdates}. */
     public void onStartUpdates(@NonNull Duration initializationTimeout) {
         Objects.requireNonNull(initializationTimeout);
 
@@ -236,6 +205,7 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
+    /** Called during {@link android.service.timezone.TimeZoneProviderService#onStopUpdates}. */
     public void onStopUpdates() {
         PiiLoggable debugInfo = PiiLoggables.fromString("onStopUpdates()");
         logDebug(debugInfo);
@@ -263,6 +233,7 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
+    /** Called during {@link android.service.timezone.TimeZoneProviderService#dump}. */
     public void dump(@NonNull PrintWriter pw) {
         synchronized (mLock) {
             // Output useful "current time" information to help with debugging.
@@ -288,6 +259,7 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
+    /** Returns the current mode. Only intended for use in tests. */
     public int getCurrentModeEnumForTests() {
         synchronized (mLock) {
             return mCurrentMode.get().mModeEnum;
@@ -373,7 +345,7 @@ public final class OfflineLocationTimeZoneDelegate {
         Mode currentMode = mCurrentMode.get();
         PiiLoggable debugInfo = PiiLoggables.fromTemplate(
                 "handleLocationKnown(), locationResult=%s"
-                +", currentMode.mListenMode=" + prettyPrintListenModeEnum(currentMode.mListenMode),
+                + ", currentMode.mListenMode=" + prettyPrintListenModeEnum(currentMode.mListenMode),
                 locationResult);
         logDebug(debugInfo);
 
@@ -515,8 +487,8 @@ public final class OfflineLocationTimeZoneDelegate {
         }
 
         // If the last result was uncertain, there is no need to send another.
-        if (lastResult == null ||
-                lastResult.getType() != TimeZoneProviderResult.RESULT_TYPE_UNCERTAIN) {
+        if (lastResult == null
+                || lastResult.getType() != TimeZoneProviderResult.RESULT_TYPE_UNCERTAIN) {
             TimeZoneProviderResult result = TimeZoneProviderResult.createUncertain();
             reportTimeZoneProviderResultInternal(result, null /* locationToken */);
         } else {

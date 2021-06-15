@@ -92,11 +92,6 @@ public class OfflineLocationTimeZoneDelegateTest {
         mTestEnvironment.assertIsNotListening();
         mTestEnvironment.assertNoActiveTimeouts();
 
-        mDelegate.onBind();
-        assertEquals(Mode.MODE_STOPPED, mDelegate.getCurrentModeEnumForTests());
-        mTestEnvironment.assertIsNotListening();
-        mTestEnvironment.assertNoActiveTimeouts();
-
         // The provider should have started an initialization timeout and followed the first
         // instruction from the accountant.
         final Duration initializationTimeout = Duration.ofSeconds(20);
@@ -144,11 +139,6 @@ public class OfflineLocationTimeZoneDelegateTest {
 
         // Start of the test
 
-        assertEquals(Mode.MODE_STOPPED, mDelegate.getCurrentModeEnumForTests());
-        mTestEnvironment.assertIsNotListening();
-        mTestEnvironment.assertNoActiveTimeouts();
-
-        mDelegate.onBind();
         assertEquals(Mode.MODE_STOPPED, mDelegate.getCurrentModeEnumForTests());
         mTestEnvironment.assertIsNotListening();
         mTestEnvironment.assertNoActiveTimeouts();
@@ -483,8 +473,8 @@ public class OfflineLocationTimeZoneDelegateTest {
                     return false;
                 }
                 FakeLocationToken that = (FakeLocationToken) o;
-                return Double.compare(that.mLngDegrees, mLngDegrees) == 0 &&
-                        Double.compare(that.mLatDegrees, mLatDegrees) == 0;
+                return Double.compare(that.mLngDegrees, mLngDegrees) == 0
+                        && Double.compare(that.mLatDegrees, mLatDegrees) == 0;
             }
 
             @Override
