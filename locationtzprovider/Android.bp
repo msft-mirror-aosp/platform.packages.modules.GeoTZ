@@ -21,7 +21,7 @@ package {
 java_library {
     name: "offlinelocationtimezoneprovider",
     srcs: ["src/main/java/**/*.java"],
-    sdk_version: "system_current",
+    sdk_version: "system_31",
     libs: [
         "androidx.annotation_annotation",
     ],
@@ -39,7 +39,7 @@ android_test {
     name: "OfflineLocationTimeZoneProviderTests",
     srcs: ["src/test/java/**/*.java"],
     manifest: "src/test/AndroidManifest.xml",
-    sdk_version: "system_current",
+    sdk_version: "system_31",
     static_libs: [
         "androidx.test.runner",
         "junit",
