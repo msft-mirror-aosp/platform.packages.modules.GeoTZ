@@ -174,23 +174,6 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
-    /** Called during {@link android.service.timezone.TimeZoneProviderService#onDestroy}. */
-    public void onDestroy() {
-        PiiLoggable entryCause = PiiLoggables.fromString("onDestroy() called");
-        logDebug(entryCause);
-
-        synchronized (mLock) {
-            cancelTimeoutsAndLocationCallbacks();
-
-            Mode currentMode = mCurrentMode.get();
-            if (currentMode.mModeEnum == MODE_STARTED) {
-                sendTimeZoneUncertainResultIfNeeded();
-            }
-            Mode newMode = new Mode(MODE_DESTROYED, entryCause);
-            mCurrentMode.set(newMode);
-        }
-    }
-
     /** Called during {@link android.service.timezone.TimeZoneProviderService#onStartUpdates}. */
     public void onStartUpdates(@NonNull Duration initializationTimeout) {
         Objects.requireNonNull(initializationTimeout);
