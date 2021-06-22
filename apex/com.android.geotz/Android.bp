@@ -21,9 +21,7 @@ apex_defaults {
     name: "com.android.geotz-defaults",
     updatable: true,
     generate_hashtree: false,
-    // TODO(b/174024269) Change this to the value for S once the API level is
-    // final.
-    min_sdk_version: "current",
+    min_sdk_version: "31",
 
     // Explicit because the defaulting behavior only works for the real
     // module.
@@ -77,7 +75,7 @@ java_library {
     static_libs: [
         "offlinelocationtimezoneprovider",
     ],
-    sdk_version: "system_current",
+    sdk_version: "system_31",
     // TODO(b/188773212): force dex compilation for inclusion in bootclasspath_fragment.
     compile_dex: true,
     apex_available: [
