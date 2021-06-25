@@ -59,7 +59,10 @@ import java.util.Objects;
  * <p>Implementation details:
  *
  * <p>The instance interacts with multiple threads, but state changes occur in a single-threaded
- * manner through the use of a lock object, {@link #mLock}.
+ * manner through the use of a lock object, {@link #mLock}. Because multiple threads are involved,
+ * service lifecycle calls like {@link #onDestroy()} may be invoked by different threads than binder
+ * calls like {@link #onStopUpdates()}, leading to unintuitive ordering. See
+ * {@link android.service.timezone.TimeZoneProviderService} for details.
  *
  * <p>There are two listening modes:
  * <ul>
@@ -174,6 +177,24 @@ public final class OfflineLocationTimeZoneDelegate {
         }
     }
 
+    /** Called during {@link android.service.timezone.TimeZoneProviderService#onDestroy}. */
+    public void onDestroy() {
+        PiiLoggable entryCause = PiiLoggables.fromString("onDestroy() called");
+        logDebug(entryCause);
+
+        synchronized (mLock) {
+            cancelTimeoutsAndLocationCallbacks();
+
+            Mode currentMode = mCurrentMode.get();
+            if (currentMode.mModeEnum == MODE_STARTED) {
+                sendTimeZoneUncertainResultIfNeeded();
+            }
+            // The current mode can be set to MODE_DESTROYED in all cases, even from MODE_FAILED.
+            Mode newMode = new Mode(MODE_DESTROYED, entryCause);
+            mCurrentMode.set(newMode);
+        }
+    }
+
     /** Called during {@link android.service.timezone.TimeZoneProviderService#onStartUpdates}. */
     public void onStartUpdates(@NonNull Duration initializationTimeout) {
         Objects.requireNonNull(initializationTimeout);
@@ -184,23 +205,10 @@ public final class OfflineLocationTimeZoneDelegate {
 
         synchronized (mLock) {
             Mode currentMode = mCurrentMode.get();
-            switch (currentMode.mModeEnum) {
-                case MODE_STOPPED: {
-                    enterStartedMode(initializationTimeout, debugInfo);
-                    break;
-                }
-                case MODE_STARTED: {
-                    // No-op - the provider is already started.
-                    logWarn("Unexpected onStarted() received when in currentMode=" + currentMode);
-                    break;
-                }
-                case MODE_FAILED:
-                case MODE_DESTROYED:
-                default: {
-                    handleUnexpectedStateTransition(
-                            "Unexpected onStarted() received when in currentMode=" + currentMode);
-                    break;
-                }
+            if (currentMode.mModeEnum == MODE_STOPPED) {
+                enterStartedMode(initializationTimeout, debugInfo);
+            } else {
+                logWarn("Unexpected onStarted() received when in currentMode=" + currentMode);
             }
         }
     }
@@ -212,23 +220,15 @@ public final class OfflineLocationTimeZoneDelegate {
 
         synchronized (mLock) {
             Mode currentMode = mCurrentMode.get();
-            switch (currentMode.mModeEnum) {
-                case MODE_STOPPED: {
-                    // No-op - the provider is already stopped.
-                    logWarn("Unexpected onStopUpdates() when currentMode=" + currentMode);
-                    break;
-                }
-                case MODE_STARTED: {
-                    enterStoppedMode(debugInfo);
-                    break;
-                }
-                case MODE_FAILED:
-                case MODE_DESTROYED:
-                default: {
-                    handleUnexpectedStateTransition(
-                            "Unexpected onStopUpdates() when currentMode=" + currentMode);
-                    break;
-                }
+            if (currentMode.mModeEnum == MODE_STARTED) {
+                enterStoppedMode(debugInfo);
+            } else if (currentMode.mModeEnum == MODE_DESTROYED) {
+                // This can happen because onDestroy() and onStopUpdates() are handled by different
+                // threads: it is still logged, but at a lower priority than other unexpected
+                // transitions.
+                logDebug("Unexpected onStopUpdates() when currentMode=" + currentMode);
+            } else {
+                logWarn("Unexpected onStopUpdates() when currentMode=" + currentMode);
             }
         }
     }
@@ -278,7 +278,7 @@ public final class OfflineLocationTimeZoneDelegate {
                 String unexpectedStateDebugInfo = "Unexpected call to onActiveListeningResult(),"
                         + " activeListeningResult=" + activeListeningResult
                         + ", currentMode=" + currentMode;
-                handleUnexpectedLocationCallback(unexpectedStateDebugInfo);
+                reportUnexpectedLocationCallback(unexpectedStateDebugInfo);
                 return;
             }
 
@@ -320,7 +320,7 @@ public final class OfflineLocationTimeZoneDelegate {
                 String unexpectedStateDebugInfo = "Unexpected call to onPassiveListeningResult(),"
                         + " passiveListeningResult=" + passiveListeningResult
                         + ", currentMode=" + currentMode;
-                handleUnexpectedLocationCallback(unexpectedStateDebugInfo);
+                reportUnexpectedLocationCallback(unexpectedStateDebugInfo);
                 return;
             }
             logDebug("onPassiveListeningResult()"
@@ -397,7 +397,7 @@ public final class OfflineLocationTimeZoneDelegate {
             Mode currentMode = mCurrentMode.get();
             if (currentMode.mModeEnum != MODE_STARTED
                     || currentMode.mListenMode != LOCATION_LISTEN_MODE_PASSIVE) {
-                handleUnexpectedLocationCallback("Unexpected call to onPassiveListeningEnded()"
+                reportUnexpectedLocationCallback("Unexpected call to onPassiveListeningEnded()"
                         + ", currentMode=" + currentMode);
                 return;
             }
@@ -529,14 +529,7 @@ public final class OfflineLocationTimeZoneDelegate {
     }
 
     @GuardedBy("mLock")
-    private void handleUnexpectedStateTransition(@NonNull String debugInfo) {
-        // To help track down unexpected behavior, this fails hard.
-        logWarn(debugInfo);
-        throw new IllegalStateException(debugInfo);
-    }
-
-    @GuardedBy("mLock")
-    private void handleUnexpectedLocationCallback(@NonNull String debugInfo) {
+    private void reportUnexpectedLocationCallback(@NonNull String debugInfo) {
         // Unexpected location callbacks can occur when location listening is cancelled, but a
         // location is already available (e.g. the callback is already invoked but blocked or
         // sitting in a handler queue). This is logged but generally ignored.
@@ -566,10 +559,13 @@ public final class OfflineLocationTimeZoneDelegate {
 
         cancelTimeoutsAndLocationCallbacks();
 
-        sendPermanentFailureResult(failure);
+        // Avoid a transition from MODE_DESTROYED -> MODE_FAILED.
+        if (mCurrentMode.get().mModeEnum != MODE_DESTROYED) {
+            sendPermanentFailureResult(failure);
 
-        Mode newMode = new Mode(MODE_FAILED, entryCause);
-        mCurrentMode.set(newMode);
+            Mode newMode = new Mode(MODE_FAILED, entryCause);
+            mCurrentMode.set(newMode);
+        }
     }
 
     @GuardedBy("mLock")
