@@ -29,8 +29,8 @@ java_library {
     host_supported: true,
     srcs: ["src/main/java/**/*.java"],
     libs: ["androidx.annotation_annotation"],
-    sdk_version: "current",
-    min_sdk_version: "current",
+    sdk_version: "31",
+    min_sdk_version: "31",
     apex_available: [
         "com.android.geotz",
     ],
@@ -41,8 +41,8 @@ android_test {
     name: "GeotzCommonTests",
     srcs: ["src/test/java/**/*.java"],
     manifest: "src/test/AndroidManifest.xml",
-    sdk_version: "current",
-    min_sdk_version: "current",
+    sdk_version: "31",
+    min_sdk_version: "31",
     static_libs: [
         "androidx.test.runner",
         "geotz_lookup",
