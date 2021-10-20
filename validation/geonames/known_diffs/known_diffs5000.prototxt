@@ -1,4 +1,19 @@
 knownDifferences {
+  cityName: "CPF"
+  s2CellId: 4460350630355009536
+  referenceDataResult {
+    isoCountryCodes: "ye"
+    zoneIds: "Asia/Kuwait"
+  }
+  actualResult {
+    isoCountryCodes: "ye"
+    zoneIds: "Asia/Aden"
+  }
+  comment: "Add a comment here"
+  type: "UNKNOWN"
+  bugUri: "http://b/bugId"
+}
+knownDifferences {
   cityName: "Itamarac\303\241"
   s2CellId: 552609014618259456
   referenceDataResult {
