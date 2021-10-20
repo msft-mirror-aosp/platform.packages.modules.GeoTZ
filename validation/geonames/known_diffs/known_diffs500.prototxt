@@ -3920,21 +3920,6 @@ knownDifferences {
   bugUri: "http://b/bugId"
 }
 knownDifferences {
-  cityName: "Gambell"
-  s2CellId: 6288737674127736832
-  referenceDataResult {
-    isoCountryCodes: "us"
-    zoneIds: "America/Adak"
-  }
-  actualResult {
-    isoCountryCodes: "us"
-    zoneIds: "America/Anchorage"
-  }
-  comment: "Add a comment here"
-  type: "UNKNOWN"
-  bugUri: "http://b/bugId"
-}
-knownDifferences {
   cityName: "Savoonga"
   s2CellId: 6289207735749705728
   referenceDataResult {
