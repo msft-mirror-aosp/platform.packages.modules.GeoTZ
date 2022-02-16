@@ -26,7 +26,7 @@ import java.util.List;
 /** A {@link HeaderBlock.HeaderBlockVisitor} that dumps information to a file. */
 class HeaderBlockDumper extends SingleFileDumper implements HeaderBlock.HeaderBlockVisitor {
 
-    HeaderBlockDumper(File headerBlockFile) {
+    public HeaderBlockDumper(File headerBlockFile) {
         super(headerBlockFile);
     }
 
