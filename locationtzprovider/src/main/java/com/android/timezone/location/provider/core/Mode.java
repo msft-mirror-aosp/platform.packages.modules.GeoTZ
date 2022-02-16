@@ -56,10 +56,10 @@ import java.util.Objects;
  *       - when the system server sends a "stopped" request it stops listening for the current
  *         location.
  *
- * {States except MODE_DESTROYED}
+ * {All states}
  *   -> {@link #MODE_FAILED} (terminal state)
  *       - when there is a fatal error.
- * {All states}
+ * {Most states}
  *   -> {@link #MODE_DESTROYED} (terminal state)
  *       - when the provider's service is destroyed, perhaps as part of the current user changing
  * </pre>

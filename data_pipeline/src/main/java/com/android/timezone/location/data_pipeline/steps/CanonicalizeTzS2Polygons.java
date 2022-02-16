@@ -92,29 +92,30 @@ public class CanonicalizeTzS2Polygons {
                 description = "The input directory containing TzS2Polygons files",
                 required = true,
                 converter = FileConverter.class)
-        public File inputDir;
+        File inputDir;
 
         @Parameter(names = "--tz-ids",
                 description = "The input TzIds prototz file",
                 required = true,
                 converter = FileConverter.class)
-        public File tzIdsFile;
+        File tzIdsFile;
 
         @Parameter(names = "--replacement-threshold",
                 description = "The ISO 8601 format date/time to use when generating time zone"
                         + " ID replacements",
                 required = true)
-        public String replacementThreshold;
+        String replacementThreshold;
 
         @Parameter(names = "--output",
                 description = "The output dir to write TzS2Polygons files to",
                 required = true,
                 converter = FileConverter.class)
-        public File outputDir;
+        File outputDir;
 
         Instant replacementThreshold() {
             return Instant.parse(replacementThreshold);
         }
+
     }
 
     /**
