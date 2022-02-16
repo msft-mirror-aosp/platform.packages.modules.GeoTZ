@@ -19,11 +19,7 @@ package com.android.timezone.location.storage.tzs2range.write;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * An iterator that can have elements pushed back onto it. {@link #remove()} is not supported.
- *
- * @param <E> The type of the element returned by this iterator
- */
+/** An iterator that can have elements pushed back onto it. {@link #remove()} is not supported. */
 public final class PushBackIterator<E> implements Iterator<E> {
 
     private final ArrayList<E> mPushBackStack = new ArrayList<>();
