@@ -26,12 +26,12 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 /** Helper methods for dumping data to files. */
-final class DumpUtils {
+public final class DumpUtils {
 
     private DumpUtils() {
     }
 
-    static PrintWriter createPrintWriter(File file) throws Visitor.VisitException {
+    public static PrintWriter createPrintWriter(File file) throws Visitor.VisitException {
         try {
             OutputStreamWriter utf8Writer = new OutputStreamWriter(
                     new FileOutputStream(file), StandardCharsets.UTF_8);
@@ -41,7 +41,7 @@ final class DumpUtils {
         }
     }
 
-    static File generateDumpFile(File dir, String filePrefix, int blockId, int maxBlockId) {
+    public static File generateDumpFile(File dir, String filePrefix, int blockId, int maxBlockId) {
         final String fileSuffix = ".txt";
 
         int blockIdLength = hexStringLength(maxBlockId);
@@ -55,16 +55,16 @@ final class DumpUtils {
         return new File(dir, sb.toString());
     }
 
-    static int hexStringLength(int value) {
+    public static int hexStringLength(int value) {
         int bitsNeeded = Integer.SIZE - Integer.numberOfLeadingZeros(value);
         return (bitsNeeded + 3) / 4;
     }
 
-    static int binaryStringLength(int value) {
+    public static int binaryStringLength(int value) {
         return Integer.SIZE - Integer.numberOfLeadingZeros(value);
     }
 
-    static String zeroPadHex(int length, int value) {
+    public static String zeroPadHex(int length, int value) {
         String hexString = Integer.toHexString(value);
         int unpaddedLength = hexString.length();
         if (unpaddedLength >= length) {
@@ -73,7 +73,7 @@ final class DumpUtils {
         return zeroPad(length, hexString);
     }
 
-    static String zeroPadBinary(int length, int value) {
+    public static String zeroPadBinary(int length, int value) {
         String binaryString = Integer.toBinaryString(value);
         int unpaddedLength = binaryString.length();
         if (unpaddedLength >= length) {
