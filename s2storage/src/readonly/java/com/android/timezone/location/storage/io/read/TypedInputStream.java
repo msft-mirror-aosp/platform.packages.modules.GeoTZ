@@ -31,26 +31,26 @@ import java.io.InputStream;
  */
 public final class TypedInputStream implements Closeable {
 
-    private final DataInputStream mDataInputStream;
+    private final DataInputStream dis;
 
     /** Wraps an InputStream. */
     public TypedInputStream(InputStream is) {
-        mDataInputStream = new DataInputStream(new BufferedInputStream(is, 8192));
+        dis = new DataInputStream(new BufferedInputStream(is, 8192));
     }
 
     /** Skip forward the specified number of bytes. */
     public int skipBytes(int n) throws IOException {
-        return mDataInputStream.skipBytes(n);
+        return dis.skipBytes(n);
     }
 
     /** Reads the next byte as an unsigned value. */
     public int readUnsignedByte() throws IOException {
-        return mDataInputStream.readByte() & 0xFF;
+        return dis.readByte() & 0xFF;
     }
 
     /** Reads the next byte as a signed value. */
     public byte readSignedByte() throws IOException {
-        return mDataInputStream.readByte();
+        return dis.readByte();
     }
 
     /**
@@ -61,7 +61,7 @@ public final class TypedInputStream implements Closeable {
         int arraySize = readUnsignedByte();
         byte[] bytes = new byte[arraySize];
         for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) mDataInputStream.readUnsignedByte();
+            bytes[i] = (byte) dis.readUnsignedByte();
         }
         return bytes;
     }
@@ -73,7 +73,7 @@ public final class TypedInputStream implements Closeable {
         int arraySize = readUnsignedByte();
         char[] chars = new char[arraySize];
         for (int i = 0; i < chars.length; i++) {
-            chars[i] = mDataInputStream.readChar();
+            chars[i] = dis.readChar();
         }
         return chars;
     }
@@ -82,25 +82,25 @@ public final class TypedInputStream implements Closeable {
      * Reads a char in network byte order.
      */
     public char readChar() throws IOException {
-        return mDataInputStream.readChar();
+        return dis.readChar();
     }
 
     /**
      * Reads a signed int in network byte order.
      */
     public int readInt() throws IOException {
-        return mDataInputStream.readInt();
+        return dis.readInt();
     }
 
     /**
      * Reads a signed long in network byte order.
      */
     public long readLong() throws IOException {
-        return mDataInputStream.readLong();
+        return dis.readLong();
     }
 
     @Override
     public void close() throws IOException {
-        mDataInputStream.close();
+        dis.close();
     }
 }
