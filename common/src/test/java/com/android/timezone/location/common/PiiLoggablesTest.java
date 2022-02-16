@@ -25,6 +25,8 @@ import static org.junit.Assert.assertNull;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.timezone.location.common.PiiLoggable;
+import com.android.timezone.location.common.PiiLoggables;
 import com.android.timezone.location.common.PiiLoggables.PiiLoggableValue;
 
 import org.junit.Test;
@@ -122,7 +124,7 @@ public class PiiLoggablesTest {
         private final String mNoPii;
         private final String mPii;
 
-        TestPiiLoggable(String noPii, String pii) {
+        public TestPiiLoggable(String noPii, String pii) {
             mNoPii = noPii;
             mPii = pii;
         }
@@ -146,8 +148,8 @@ public class PiiLoggablesTest {
                 return false;
             }
             TestPiiLoggable that = (TestPiiLoggable) o;
-            return mNoPii.equals(that.mNoPii)
-                    && mPii.equals(that.mPii);
+            return mNoPii.equals(that.mNoPii) &&
+                    mPii.equals(that.mPii);
         }
 
         @Override
