@@ -19,7 +19,6 @@ package com.android.timezone.location.data_pipeline.tools;
 import com.android.timezone.location.data_pipeline.steps.Types;
 import com.android.timezone.location.data_pipeline.steps.Types.ProtoStorageFormat;
 import com.android.timezone.location.data_pipeline.steps.Types.TzS2CellUnion;
-
 import com.google.common.geometry.S2CellId;
 
 import java.io.File;
