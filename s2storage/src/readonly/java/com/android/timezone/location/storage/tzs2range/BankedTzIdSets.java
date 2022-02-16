@@ -172,9 +172,6 @@ public final class BankedTzIdSets {
             return mId;
         }
 
-        /**
-         * Returns the {@link TzIdSet} with the specified index.
-         */
         public TzIdSet getTzIdSet(int index) {
             return mTzIdSets.get(index);
         }

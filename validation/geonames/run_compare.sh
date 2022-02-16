@@ -31,8 +31,7 @@ if (( $# < 1 )); then
   echo "Usage: ${0} [500|1000|5000|15000]"
   echo
   echo "  The number determines the geonames file to use (500 means <= 500 population)"
-  echo "  500 is generally fine to start: This includes 1,000, 5,000 and 15,000 population too."
-  echo "  If you find differences, run with 15,000 and fix issues, then 5,000, then 1,000, etc."
+  echo "  500 is generally fine: This includes 1,000 and 15,000 population too."
   exit 1
 fi
 
