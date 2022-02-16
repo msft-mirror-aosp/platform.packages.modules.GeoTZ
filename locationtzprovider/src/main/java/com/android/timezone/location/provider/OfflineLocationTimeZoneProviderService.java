@@ -59,11 +59,6 @@ public final class OfflineLocationTimeZoneProviderService extends TimeZoneProvid
     }
 
     @Override
-    public void onDestroy() {
-        mDelegate.onDestroy();
-    }
-
-    @Override
     public void onStartUpdates(long initializationTimeoutMillis) {
         mDelegate.onStartUpdates(Duration.ofMillis(initializationTimeoutMillis));
     }

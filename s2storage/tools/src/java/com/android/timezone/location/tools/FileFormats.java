@@ -19,19 +19,18 @@ package com.android.timezone.location.tools;
 import com.android.timezone.location.storage.tzs2range.TzS2RangeFileFormat;
 
 /** Some sample file formats. */
-final class FileFormats {
+public final class FileFormats {
 
-    private static final TzS2RangeFileFormat FILE_FORMAT_12 =
+    private final static TzS2RangeFileFormat FILE_FORMAT_12 =
             new TzS2RangeFileFormat(12, 11, 16, 1, 32, 11);
 
-    private static final TzS2RangeFileFormat FILE_FORMAT_14 =
+    private final static TzS2RangeFileFormat FILE_FORMAT_14 =
             new TzS2RangeFileFormat(14, 13, 18, 1, 32, 12);
 
-    private static final TzS2RangeFileFormat FILE_FORMAT_16 =
+    private final static TzS2RangeFileFormat FILE_FORMAT_16 =
             new TzS2RangeFileFormat(16, 13, 22, 1, 40, 12);
 
-    /** Maps an S2 level to one of the file format constants declared on by class. */
-    static TzS2RangeFileFormat getFileFormatForLevel(int s2Level) {
+    public static TzS2RangeFileFormat getFileFormatForLevel(int s2Level) {
         switch (s2Level) {
             case 12:
                 return FILE_FORMAT_12;
