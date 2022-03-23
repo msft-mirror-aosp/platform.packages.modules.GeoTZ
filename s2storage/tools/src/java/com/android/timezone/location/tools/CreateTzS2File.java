@@ -42,22 +42,22 @@ public final class CreateTzS2File {
                 description = "Proto file",
                 required = true,
                 converter = FileConverter.class)
-        public File inputFile;
+        File inputFile;
 
         @Parameter(names = "--s2-level",
                 description = "s2 level of input data",
                 required = true)
-        public int s2Level;
+        int s2Level;
 
         @Parameter(names = "--output-file",
                 description = "tz s2 file",
                 required = true,
                 converter = FileConverter.class)
-        public File outputFile;
+        File outputFile;
 
     }
 
-    /**
+    /*
      * Usage:
      * CreateTzS2File <[input] proto file> <[input] s2 level of input data> <[output] tz s2 file>
      *
