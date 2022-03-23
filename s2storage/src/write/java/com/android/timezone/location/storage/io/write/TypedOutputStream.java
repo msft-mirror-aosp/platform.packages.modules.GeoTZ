@@ -32,11 +32,11 @@ import java.io.OutputStream;
  */
 public final class TypedOutputStream implements Flushable, Closeable {
 
-    private final DataOutputStream mDataOutputStream;
+    private final DataOutputStream dos;
 
     /** Creates an instance, wrapping the supplied stream. */
     public TypedOutputStream(OutputStream out) {
-        mDataOutputStream = new DataOutputStream(new BufferedOutputStream(out, 8192));
+        dos = new DataOutputStream(new BufferedOutputStream(out, 8192));
     }
 
     /**
@@ -61,7 +61,7 @@ public final class TypedOutputStream implements Flushable, Closeable {
         // Write the high bytes first.
         for (int i = byteCount - 1; i >= 0; i--) {
             byte b = (byte) (value >>> (i * 8));
-            mDataOutputStream.write(b);
+            dos.write(b);
         }
     }
 
@@ -73,7 +73,7 @@ public final class TypedOutputStream implements Flushable, Closeable {
         if (unsignedValue < 0 || unsignedValue > 255) {
             throw new IllegalArgumentException("unsignedValue=" + unsignedValue + " is negative");
         }
-        mDataOutputStream.writeByte(unsignedValue);
+        dos.writeByte(unsignedValue);
     }
 
     /**
@@ -82,21 +82,21 @@ public final class TypedOutputStream implements Flushable, Closeable {
      */
     public void writeByte(int b) throws IOException {
         BitwiseUtils.checkSignedValueInRange(Byte.SIZE, b);
-        mDataOutputStream.writeByte(b);
+        dos.writeByte(b);
     }
 
     /**
      * Writes {@code bytes}.
      */
     public void writeBytes(byte[] bytes) throws IOException {
-        mDataOutputStream.write(bytes);
+        dos.write(bytes);
     }
 
     /**
      * Writes {@code len} {@code bytes} starting at {@code off}.
      */
     public void writeBytes(byte[] bytes, int off, int len) throws IOException {
-        mDataOutputStream.write(bytes, off, len);
+        dos.write(bytes, off, len);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class TypedOutputStream implements Flushable, Closeable {
      */
     public void writeTinyByteArray(byte[] bytes) throws IOException {
         writeUnsignedByte(bytes.length);
-        mDataOutputStream.write(bytes);
+        dos.write(bytes);
     }
 
     /**
@@ -113,7 +113,7 @@ public final class TypedOutputStream implements Flushable, Closeable {
     public void writeTinyCharArray(char[] chars) throws IOException {
         writeUnsignedByte(chars.length);
         for (int i = 0; i < chars.length; i++) {
-            mDataOutputStream.writeChar(chars[i]);
+            dos.writeChar(chars[i]);
         }
     }
 
@@ -123,30 +123,30 @@ public final class TypedOutputStream implements Flushable, Closeable {
      */
     public void writeChar(int v) throws IOException {
         BitwiseUtils.checkUnsignedValueInRange(Character.SIZE, v);
-        mDataOutputStream.writeChar(v);
+        dos.writeChar(v);
     }
 
     /**
      * Writes {@code v} as an 32-bit value in network byte order.
      */
     public void writeInt(int v) throws IOException {
-        mDataOutputStream.writeInt(v);
+        dos.writeInt(v);
     }
 
     /**
      * Writes {@code v} as an 64-bit value in network byte order.
      */
     public void writeLong(long v) throws IOException {
-        mDataOutputStream.writeLong(v);
+        dos.writeLong(v);
     }
 
     @Override
     public void close() throws IOException {
-        mDataOutputStream.close();
+        dos.close();
     }
 
     @Override
     public void flush() throws IOException {
-        mDataOutputStream.flush();
+        dos.flush();
     }
 }

@@ -190,7 +190,7 @@ public final class SuffixTableBlock {
      * An entry from the {@link SuffixTableBlock}. Use {@link #getSuffixTableRange()} to get the
      * full, interpreted entry data.
      */
-    public abstract static class Entry {
+    public static abstract class Entry {
 
         /** Returns the position of this entry in the table. */
         public abstract int getIndex();
