@@ -1,5 +1,9 @@
 // An example application that uses the reference
 // offlinelocationtimezoneprovider impl.
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 android_app {
     name: "OfflineLocationTimeZoneProviderService",
     manifest: "AndroidManifest.xml",
@@ -32,4 +36,3 @@ prebuilt_etc {
     sub_dir: "permissions",
     filename_from_src: true,
 }
-
