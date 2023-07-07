@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.geotz;
+package com.android.geotz.app;
 
 import com.android.timezone.location.provider.core.MetricsReporter;
 import com.android.timezone.location.provider.core.OfflineLocationTimeZoneDelegate.ListenModeEnum;
 
 /**
- * The implementation of {@link MetricsReporter} used for the com.android.geotz module deployment
+ * The implementation of {@link MetricsReporter} used for the app deployment
  * of {@link com.android.timezone.location.provider.OfflineLocationTimeZoneProviderService}.
  */
 public class MetricsReporterImpl extends MetricsReporter {
@@ -28,6 +28,6 @@ public class MetricsReporterImpl extends MetricsReporter {
     public void reportLocationListeningCompletedEvent(@ListenModeEnum int listenMode,
             long requestedDurationMillis, long actualTimeListeningMillis,
             int listeningStoppedReason) {
-        // TODO(b/172934905): Implement once the atom has landed.
+        // No-op
     }
 }
