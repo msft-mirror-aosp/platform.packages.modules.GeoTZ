@@ -48,7 +48,7 @@ android_test {
         "androidx.test.runner",
         "geotz_lookup",
         "junit",
-        "truth-prebuilt",
+        "truth",
     ],
     test_suites: ["general-tests"],
 }
