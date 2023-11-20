@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools;
+package com.android.timezone.location.tools.tzs2;
 
 import com.android.timezone.location.common.LicenseSupport;
 import com.android.timezone.location.storage.tzs2range.TzS2Range;

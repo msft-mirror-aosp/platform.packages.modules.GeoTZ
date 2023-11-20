@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools.dump;
+package com.android.timezone.location.tools.block.dump;
 
-import static com.android.timezone.location.tools.dump.DumpUtils.createPrintWriter;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.createPrintWriter;
 
 import com.android.timezone.location.storage.util.Visitor;
 
@@ -28,13 +28,16 @@ import java.util.Objects;
  * A class that can be used as a base class for a visitor that dumps information to a single file,
  * or as a helper for one.
  */
-class SingleFileDumper implements Visitor {
+public class SingleFileDumper implements Visitor {
 
     private final File mFile;
 
     protected PrintWriter mWriter;
 
-    SingleFileDumper(File file) {
+    /**
+     * Creates a dumper that will dump to the specified file.
+     */
+    public SingleFileDumper(File file) {
         mFile = Objects.requireNonNull(file);
     }
 
@@ -43,10 +46,16 @@ class SingleFileDumper implements Visitor {
         mWriter = createPrintWriter(mFile);
     }
 
+    /**
+     * Prints the string to the file with a trailing newline.
+     */
     public void println(String string) {
         mWriter.println(string);
     }
 
+    /**
+     * Prints an empty line to the file.
+     */
     public void println() {
         mWriter.println();
     }
