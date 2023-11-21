@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools.dump;
+package com.android.timezone.location.tools.tzs2.dump;
 
 import com.android.timezone.location.storage.tzs2range.BankedTzIdSets;
 import com.android.timezone.location.storage.tzs2range.TzS2RangeFileFormat;
 import com.android.timezone.location.storage.tzs2range.read.HeaderBlock;
+import com.android.timezone.location.tools.block.dump.SingleFileDumper;
 
 import java.io.File;
 import java.util.List;
 
 /** A {@link HeaderBlock.HeaderBlockVisitor} that dumps information to a file. */
-class HeaderBlockDumper extends SingleFileDumper implements HeaderBlock.HeaderBlockVisitor {
+final class HeaderBlockDumper extends SingleFileDumper implements HeaderBlock.HeaderBlockVisitor {
 
     HeaderBlockDumper(File headerBlockFile) {
         super(headerBlockFile);
