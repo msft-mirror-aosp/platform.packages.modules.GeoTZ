@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools.dump;
+package com.android.timezone.location.tools.tzs2.dump;
 
-import static com.android.timezone.location.tools.dump.DumpUtils.binaryStringLength;
-import static com.android.timezone.location.tools.dump.DumpUtils.createPrintWriter;
-import static com.android.timezone.location.tools.dump.DumpUtils.generateDumpFile;
-import static com.android.timezone.location.tools.dump.DumpUtils.hexStringLength;
-import static com.android.timezone.location.tools.dump.DumpUtils.zeroPadBinary;
-import static com.android.timezone.location.tools.dump.DumpUtils.zeroPadHex;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.binaryStringLength;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.createPrintWriter;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.generateDumpFile;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.hexStringLength;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.zeroPadBinary;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.zeroPadHex;
 
 import com.android.timezone.location.storage.tzs2range.read.SuffixTableBlock;
 
@@ -54,7 +54,6 @@ public final class SuffixTableBlockDumper implements SuffixTableBlock.SuffixTabl
             int entryCount = suffixTableBlock.getEntryCount();
             writer.println("Entry count=" + entryCount);
             if (entryCount > 0) {
-                writer.println("TzIdSetBank=" + suffixTableBlock.getTzIdSetBank());
                 for (int i = 0; i < entryCount; i++) {
                     writer.println(
                             "[" + i + "]=" + suffixTableBlock.getEntryByIndex(i)
