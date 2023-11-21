@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools;
+package com.android.timezone.location.tools.block;
 
 import com.android.timezone.location.storage.block.read.BlockFileReader;
-import com.android.timezone.location.tools.dump.BlockFileDumper;
+import com.android.timezone.location.tools.block.dump.BlockFileDumper;
 
 import java.io.File;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools;
+package com.android.timezone.location.tools.tzs2;
 
 import com.android.timezone.location.storage.tzs2range.TzS2Range;
 import com.android.timezone.location.storage.tzs2range.TzS2RangeFileFormat;
@@ -25,11 +25,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Creates a TZ S2 file with a small amount of test data. Useful for testing other tools. */
-public final class CreateTestFile {
+public final class CreateTestTzS2File {
 
     /**
      * Usage:
-     * CreateTestFile <file name>
+     * CreateTestTzS2File &lt;file name&gt;
      */
     public static void main(String[] args) throws Exception {
         File file = new File(args[0]);
