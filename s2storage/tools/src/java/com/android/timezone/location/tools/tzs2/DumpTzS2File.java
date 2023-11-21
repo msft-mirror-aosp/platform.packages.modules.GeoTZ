@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools;
+package com.android.timezone.location.tools.tzs2;
 
 import com.android.timezone.location.storage.tzs2range.read.TzS2RangeFileReader;
-import com.android.timezone.location.tools.dump.TzS2RangeFileDumper;
+import com.android.timezone.location.tools.block.DumpBlockFile;
+import com.android.timezone.location.tools.tzs2.dump.TzS2RangeFileDumper;
 
 import java.io.File;
 

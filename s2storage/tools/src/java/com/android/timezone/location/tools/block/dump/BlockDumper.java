@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools.dump;
+package com.android.timezone.location.tools.block.dump;
 
 import com.android.timezone.location.storage.block.read.Block;
 

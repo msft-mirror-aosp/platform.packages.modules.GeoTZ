@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.timezone.location.tools.dump;
+package com.android.timezone.location.tools.tzs2.dump;
 
-import static com.android.timezone.location.tools.dump.DumpUtils.binaryStringLength;
-import static com.android.timezone.location.tools.dump.DumpUtils.hexStringLength;
-import static com.android.timezone.location.tools.dump.DumpUtils.zeroPadBinary;
-import static com.android.timezone.location.tools.dump.DumpUtils.zeroPadHex;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.binaryStringLength;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.hexStringLength;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.zeroPadBinary;
+import static com.android.timezone.location.tools.block.dump.DumpUtils.zeroPadHex;
 
 import com.android.timezone.location.storage.tzs2range.TzS2RangeFileFormat;
 import com.android.timezone.location.storage.tzs2range.read.HeaderBlock;
@@ -27,6 +27,7 @@ import com.android.timezone.location.storage.tzs2range.read.SuffixTableBlock;
 import com.android.timezone.location.storage.tzs2range.read.SuffixTableExtraInfo;
 import com.android.timezone.location.storage.tzs2range.read.TzS2RangeFileReader;
 import com.android.timezone.location.storage.util.Visitor;
+import com.android.timezone.location.tools.block.dump.SingleFileDumper;
 
 import java.io.File;
 
