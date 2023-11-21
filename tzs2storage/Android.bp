@@ -17,14 +17,17 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-// Generic read-only storage classes
+// GeoTZ read-only classes (including generic classes)
 java_library {
-    name: "s2storage_ro",
+    name: "geotz_s2storage_ro",
     sdk_version: "31",
     min_sdk_version: "31",
     host_supported: true,
     srcs: [
-        "src/readonly/java/**/*.java",
+        "src/readonly/java/com/android/timezone/**/*.java",
+    ],
+    static_libs: [
+        "s2storage_ro",
     ],
     apex_available: [
         "//apex_available:platform",
@@ -32,36 +35,26 @@ java_library {
     ],
 }
 
-// Generic read/write storage classes
+// Library for read/write access to TZ S2 data files.
 java_library_host {
-    name: "s2storage_rw",
+    name: "geotz_s2storage_rw",
     srcs: [
         "src/write/java/**/*.java",
     ],
     static_libs: [
-        "s2storage_ro",
+        "geotz_s2storage_ro",
+        "s2storage_rw",
     ],
 }
 
-// Generic read-only storage classes
-java_library_host {
-    name: "s2storage_testing",
-    srcs: [
-        "src/testing/java/**/*.java",
-    ],
-    libs: [
-        "junit",
-    ],
-}
-
-// Tests for the generic storage classes
+// Tests for the TZ S2 storage code.
 java_test_host {
-    name: "s2storage_tests",
+    name: "geotz_s2storage_tests",
 
     srcs: ["src/test/java/**/*.java"],
     static_libs: [
-        "s2storage_rw",
         "s2storage_testing",
+        "geotz_s2storage_rw",
         "junit",
         "mockito",
         "objenesis",
