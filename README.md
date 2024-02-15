@@ -31,9 +31,14 @@ Directory structure
     the associated license files.
 
 `s2storage`
-  - File reading / writing code and tools to support `tzs2.dat` generation on
-    host, and the file's use on host and device. See `s2storage/README.md` for
-    format details.
+  - Generic file reading / writing code and tools to support `tzs2.dat`
+    generation on host, and the file's use on host and device. See
+    `s2storage/README.md` for details.
+
+`tzs2storage`
+  - TZ-specific file reading / writing code and tools to support `tzs2.dat`
+    generation on host, and the file's use on host and device. See
+    `tzs2storage/README.md` for details.
 
 `tzbb_data`
   - Data / licenses from the external
