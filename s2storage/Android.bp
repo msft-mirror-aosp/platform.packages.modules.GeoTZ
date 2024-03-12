@@ -33,8 +33,9 @@ java_library {
 }
 
 // Generic read/write storage classes
-java_library_host {
+java_library {
     name: "s2storage_rw",
+    host_supported: true,
     srcs: [
         "src/write/java/**/*.java",
     ],
