@@ -84,6 +84,15 @@ public final class BlockData {
     }
 
     /**
+     * Returns an array of signed bytes starting at the specified position, where the 4-byte length
+     * is encoded in the data.
+     */
+    public byte[] getByteArray(int byteOffset) {
+        int size = getInt(byteOffset);
+        return getBytes(byteOffset + Integer.BYTES, size);
+    }
+
+    /**
      * Returns an array of signed bytes starting at the specified position.
      */
     public byte[] getBytes(int byteOffset, int byteCount) {
