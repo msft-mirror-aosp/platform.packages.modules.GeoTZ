@@ -33,7 +33,11 @@ abstract class BaseTypedPackedTable<E extends Table.TableEntry<E>> implements Ta
     protected final PackedTableReader mTableReader;
 
     BaseTypedPackedTable(BlockData blockData, int maxValueTypeBits) {
-        mTableReader = new PackedTableReader(blockData);
+        this(blockData, maxValueTypeBits, false);
+    }
+
+    BaseTypedPackedTable(BlockData blockData, int maxValueTypeBits, boolean useBigSharedData) {
+        mTableReader = new PackedTableReader(blockData, useBigSharedData);
         if (mTableReader.getValueSizeBits() > maxValueTypeBits) {
             throw new IllegalArgumentException(
                     "The supplied packed table block can hold values greater than "

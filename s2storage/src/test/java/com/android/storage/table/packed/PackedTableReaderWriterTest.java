@@ -214,14 +214,20 @@ public class PackedTableReaderWriterTest {
 
     @Test
     public void getSharedData() throws IOException {
+        getSharedData(true);
+        getSharedData(false);
+    }
+
+    private void getSharedData(boolean useBigSharedData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] sharedData = "Shared data".getBytes(StandardCharsets.UTF_8);
+        byte[] sharedData = createPopulatedByteArray(useBigSharedData ? 1500 : 100);
         boolean signedValue = false;
-        PackedTableWriter writer = PackedTableWriter.create(baos, 2, 4, signedValue, sharedData);
+        PackedTableWriter writer =
+                PackedTableWriter.create(baos, 2, 4, signedValue, sharedData, useBigSharedData);
         writer.close();
 
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
-        PackedTableReader tableReader = new PackedTableReader(blockData);
+        PackedTableReader tableReader = new PackedTableReader(blockData, useBigSharedData);
         assertArrayEquals(sharedData, tableReader.getSharedData());
     }
 
@@ -540,5 +546,14 @@ public class PackedTableReaderWriterTest {
 
     private static ByteBuffer createByteBuffer(byte[] bytes) {
         return ByteBuffer.wrap(bytes).asReadOnlyBuffer();
+    }
+
+    private static byte[] createPopulatedByteArray(int size) {
+        byte[] byteArray = new byte[size];
+        char ch = 'A';
+        for (int i = 0; i < size; i++) {
+            byteArray[i] = (byte) (ch + (i % 27));
+        }
+        return byteArray;
     }
 }

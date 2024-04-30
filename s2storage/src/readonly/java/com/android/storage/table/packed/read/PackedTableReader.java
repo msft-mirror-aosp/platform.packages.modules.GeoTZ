@@ -73,12 +73,21 @@ public final class PackedTableReader {
     private final boolean mIntValueSupported;
 
     public PackedTableReader(BlockData blockData) {
+        this(blockData, false);
+    }
+
+    public PackedTableReader(BlockData blockData, boolean useBigSharedData) {
         mBlockData = Objects.requireNonNull(blockData);
 
         int offset = 0;
 
-        mSharedData = blockData.getTinyByteArray(offset);
-        offset += Byte.BYTES + mSharedData.length;
+        if (useBigSharedData) {
+            mSharedData = blockData.getByteArray(offset);
+            offset += Integer.BYTES + mSharedData.length;
+        } else {
+            mSharedData = blockData.getTinyByteArray(offset);
+            offset += Byte.BYTES + mSharedData.length;
+        }
 
         // Boolean properties are extracted from a 32-bit bit field.
         int bitField = blockData.getUnsignedByte(offset);
