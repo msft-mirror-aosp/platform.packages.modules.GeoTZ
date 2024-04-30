@@ -72,7 +72,10 @@ public final class PackedTableWriter implements AutoCloseable {
 
     /**
      * Creates a {@link PackedTableWriter} to write to the specified stream with the specified
-     * parameters. Entries must be added in key order via {@link #addEntry(int, long)}.
+     * parameters. Entries must be added in key order via {@link #addEntry(int, long)}. Using this
+     * factory method, the maximum size of {@code sharedData} is 255 bytes. If the size of
+     * {@code sharedData} is more than 255 bytes, the method
+     * {@link #create(OutputStream, int, int, boolean, byte[], boolean)} should be used.
      *
      * @param outputStream the stream to write to
      * @param entrySizeBytes the number of bytes per entry
@@ -85,17 +88,43 @@ public final class PackedTableWriter implements AutoCloseable {
      */
     public static PackedTableWriter create(OutputStream outputStream, int entrySizeBytes,
             int keyBits, boolean signedValue, byte[] sharedData) throws IOException {
+        return create(outputStream, entrySizeBytes, keyBits, signedValue, sharedData, false);
+    }
+
+    /**
+     * Creates a {@link PackedTableWriter} to write to the specified stream with the specified
+     * parameters. Entries must be added in key order via {@link #addEntry(int, long)}.
+     *
+     * @param outputStream the stream to write to
+     * @param entrySizeBytes the number of bytes per entry
+     * @param keyBits the number of bits in the key
+     * @param signedValue true if the values written via {@link #addEntry(int, long)} should be
+     * sign extended
+     * @param sharedData data to write into the table's header, i.e. that applies to all entries in
+     * the table
+     * @param useBigSharedData {@code true} means an integer will be used for storing the length of
+     * the shared data; {@code false} means an unsigned byte will be used. Specifying {@code false}
+     * uses less space per table, but limits the shared data to 255 bytes per table.
+     * @throws IllegalArgumentException if the parameters are invalid
+     */
+    public static PackedTableWriter create(OutputStream outputStream, int entrySizeBytes,
+            int keyBits, boolean signedValue, byte[] sharedData, boolean useBigSharedData)
+            throws IOException {
         PackedTableWriter packedTableWriter =
                 new PackedTableWriter(outputStream, entrySizeBytes, keyBits, signedValue);
-        packedTableWriter.writeHeader(sharedData);
+        packedTableWriter.writeHeader(sharedData, useBigSharedData);
         return packedTableWriter;
     }
 
-    private void writeHeader(byte[] sharedData) throws IOException {
+    private void writeHeader(byte[] sharedData, boolean useBigSharedData) throws IOException {
         if (sharedData == null) {
             sharedData = EMPTY_BYTE_ARRAY;
         }
-        mBlockDataOutputStream.writeTinyByteArray(sharedData);
+        if (useBigSharedData) {
+            mBlockDataOutputStream.writeByteArray(sharedData);
+        } else {
+            mBlockDataOutputStream.writeTinyByteArray(sharedData);
+        }
 
         int bitField = 0;
         if (mSignedValue) {
