@@ -126,14 +126,21 @@ public class IntValuePackedTableTest {
 
     @Test
     public void getSharedData() throws IOException {
+        getSharedData(true);
+        getSharedData(false);
+    }
+
+    private void getSharedData(boolean useBigSharedData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] sharedData = "Shared data".getBytes(StandardCharsets.UTF_8);
         boolean signedValue = false;
-        PackedTableWriter writer = PackedTableWriter.create(baos, 2, 4, signedValue, sharedData);
+        PackedTableWriter writer =
+                PackedTableWriter.create(baos, 2, 4, signedValue, sharedData, useBigSharedData);
         writer.close();
 
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
-        IntValueTypedPackedTable intValuePackedTable = new IntValueTypedPackedTable(blockData);
+        IntValueTypedPackedTable intValuePackedTable =
+                new IntValueTypedPackedTable(blockData, useBigSharedData);
         assertArrayEquals(sharedData, intValuePackedTable.getSharedData());
     }
 
