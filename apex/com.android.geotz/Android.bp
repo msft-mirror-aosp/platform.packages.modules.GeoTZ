@@ -20,7 +20,6 @@ package {
 apex_defaults {
     name: "com.android.geotz-defaults",
     updatable: true,
-    generate_hashtree: false,
     min_sdk_version: "31",
 
     // Explicit because the defaulting behavior only works for the real
