@@ -18,7 +18,6 @@ package com.android.storage.block.read;
 
 import com.android.storage.util.Visitor;
 
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -32,11 +31,11 @@ public final class Block {
 
     private final BlockData mBlockData;
 
-    /** Creates a Block. The {@link ByteBuffer} must be read-only and is not copied. */
-    public Block(int id, int type, ByteBuffer dataBytes) {
+    /** Creates a Block. */
+    public Block(int id, int type, BlockData blockData) {
         mId = id;
         mType = type;
-        mBlockData = new BlockData(Objects.requireNonNull(dataBytes));
+        mBlockData = Objects.requireNonNull(blockData);
     }
 
     /** Returns the ID for this block. */
