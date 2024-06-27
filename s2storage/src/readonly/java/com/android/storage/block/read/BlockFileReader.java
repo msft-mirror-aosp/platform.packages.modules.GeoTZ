@@ -32,6 +32,7 @@ import java.nio.channels.FileChannel;
 public final class BlockFileReader implements AutoCloseable {
 
     private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0).asReadOnlyBuffer();
+    private static final BlockData EMPTY_BLOCK_DATA = new BlockData(EMPTY_BYTE_BUFFER);
 
     private Character mRequiredMagic;
 
@@ -146,7 +147,7 @@ public final class BlockFileReader implements AutoCloseable {
 
         BlockInfo blockInfo = mBlockInfos[blockId];
         if (blockInfo.getBlockSizeBytes() == 0) {
-            return new Block(blockId, blockInfo.getType(), EMPTY_BYTE_BUFFER);
+            return new Block(blockId, blockInfo.getType(), EMPTY_BLOCK_DATA);
         }
 
         ByteBuffer allBlockBuffer;
@@ -193,8 +194,8 @@ public final class BlockFileReader implements AutoCloseable {
         }
 
         // The part of the block that holds the data.
-        ByteBuffer blockDataBytes = allBlockBuffer.slice();
-        return new Block(actualId, actualType, blockDataBytes);
+        BlockData blockData = new BlockData(allBlockBuffer.slice());
+        return new Block(actualId, actualType, blockData);
     }
 
     /** Returns the number of blocks in the file. */
