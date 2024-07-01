@@ -17,6 +17,7 @@
 package com.android.storage.table.packed.read;
 
 import com.android.storage.block.read.BlockData;
+import com.android.storage.block.read.TypedData;
 import com.android.storage.table.reader.IntValueTable.IntValueEntryMatcher;
 import com.android.storage.table.reader.LongValueTable.LongValueEntryMatcher;
 import com.android.storage.util.BitwiseUtils;
@@ -58,7 +59,7 @@ public final class PackedTableReader {
     private final int mEntryCount;
 
     /** Domain-specific data that should be common to all entries. */
-    private final byte[] mSharedData;
+    private final TypedData mSharedData;
 
     /**
      * True if the value is to be treated as a signed value, i.e. whether its sign should be
@@ -81,13 +82,16 @@ public final class PackedTableReader {
 
         int offset = 0;
 
+        int sharedDataLength;
         if (useBigSharedData) {
-            mSharedData = blockData.getByteArray(offset);
-            offset += Integer.BYTES + mSharedData.length;
+            sharedDataLength = blockData.getInt(offset);
+            offset += Integer.BYTES;
         } else {
-            mSharedData = blockData.getTinyByteArray(offset);
-            offset += Byte.BYTES + mSharedData.length;
+            sharedDataLength = blockData.getByte(offset);
+            offset += Byte.BYTES;
         }
+        mSharedData = blockData.slice(offset, sharedDataLength);
+        offset += sharedDataLength;
 
         // Boolean properties are extracted from a 32-bit bit field.
         int bitField = blockData.getUnsignedByte(offset);
@@ -147,8 +151,25 @@ public final class PackedTableReader {
         return mValueSizeBits;
     }
 
-    /** Returns the table's shared data. */
+    /**
+     * Returns the table's unstructured shared data that can be used, for example, to hold
+     * information shared by all entries in the table.
+     *
+     * <p>See {@link #getSharedDataAsTyped()} for an alternative that consumes less memory for
+     * large shared data and provides type conversions.
+     */
     public byte[] getSharedData() {
+        return mSharedData.getBytes(0, mSharedData.getSize());
+    }
+
+    /**
+     * Returns the table's unstructured shared data that can be used, for example, to hold
+     * information shared by all entries in the table.
+     *
+     * <p>Unlike {@link #getSharedData()}, this method will not allocate a byte array, which
+     * can save memory if the shared data is large.
+     */
+    public TypedData getSharedDataAsTyped() {
         return mSharedData;
     }
 
