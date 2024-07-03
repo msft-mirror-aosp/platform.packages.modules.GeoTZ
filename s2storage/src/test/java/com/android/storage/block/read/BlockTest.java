@@ -32,8 +32,8 @@ public class BlockTest {
     public void visit() throws Exception {
         int id = 1234;
         int type = 2345;
-        ByteBuffer blockData = ByteBuffer.wrap("Data Bytes".getBytes()).asReadOnlyBuffer();
-        Block block = new Block(id, type, blockData);
+        ByteBuffer blockDataBuffer = ByteBuffer.wrap("Data Bytes".getBytes()).asReadOnlyBuffer();
+        Block block = new Block(id, type, new BlockData(blockDataBuffer));
         Block.BlockVisitor mockVisitor = mock(Block.BlockVisitor.class);
         block.visit(mockVisitor);
 
