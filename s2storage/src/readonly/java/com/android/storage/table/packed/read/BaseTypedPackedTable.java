@@ -17,6 +17,7 @@
 package com.android.storage.table.packed.read;
 
 import com.android.storage.block.read.BlockData;
+import com.android.storage.block.read.TypedData;
 import com.android.storage.table.reader.Table;
 
 import java.util.Objects;
@@ -48,6 +49,11 @@ abstract class BaseTypedPackedTable<E extends Table.TableEntry<E>> implements Ta
     @Override
     public byte[] getSharedData() {
         return mTableReader.getSharedData();
+    }
+
+    @Override
+    public TypedData getSharedDataAsTyped() {
+        return mTableReader.getSharedDataAsTyped();
     }
 
     @Override
