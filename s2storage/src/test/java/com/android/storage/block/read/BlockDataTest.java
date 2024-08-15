@@ -19,6 +19,7 @@ package com.android.storage.block.read;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 
 import com.android.storage.io.write.TypedOutputStream;
 
@@ -67,6 +68,65 @@ public class BlockDataTest {
         assertEquals(0, byteBuffer.position());
         assertEquals(originalByteBuffer.limit(), byteBuffer.limit());
         assertEquals(blockDataBytes.length, byteBuffer.capacity());
+    }
+
+    @Test
+    public void slice() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TypedOutputStream typedOutputStream = new TypedOutputStream(baos);
+        byte[] tinyByteArray = "Tiny Byte Array".getBytes(StandardCharsets.UTF_8);
+        typedOutputStream.writeTinyByteArray(tinyByteArray);
+        typedOutputStream.close();
+
+        byte[] blockDataBytes = baos.toByteArray();
+        ByteBuffer originalByteBuffer = ByteBuffer.wrap(blockDataBytes).asReadOnlyBuffer();
+        BlockData blockData = new BlockData(originalByteBuffer);
+
+        assertSliceEmptyBehavior(blockData, 0, 0);
+        assertSliceNonEmptyBehavior(blockData, 0, 1);
+        assertSliceNonEmptyBehavior(blockData, 0, blockData.getSize());
+
+        assertSliceEmptyBehavior(blockData, 1, 0);
+        assertSliceNonEmptyBehavior(blockData, 1, 1);
+        assertSliceNonEmptyBehavior(blockData, 1, blockData.getSize() - 1);
+
+        assertSliceEmptyBehavior(blockData, blockData.getSize() - 2, 0);
+        assertSliceNonEmptyBehavior(blockData, blockData.getSize() - 2, 1);
+        assertSliceNonEmptyBehavior(blockData, blockData.getSize() - 2, 2);
+
+        assertSliceEmptyBehavior(blockData, blockData.getSize() - 1, 0);
+        assertSliceNonEmptyBehavior(blockData, blockData.getSize() - 1, 1);
+
+        assertSliceEmptyBehavior(blockData, blockData.getSize(), 0);
+
+        // Edge cases: length of slice puts the top of the new slice outside of the original buffer.
+        assertSliceTypedDataBadArguments(blockData, -1, 0);
+        assertSliceTypedDataBadArguments(blockData, 0, blockData.getSize() + 1);
+        assertSliceTypedDataBadArguments(blockData, 0, blockData.getSize() * 2);
+        assertSliceTypedDataBadArguments(blockData, 1, blockData.getSize());
+        assertSliceTypedDataBadArguments(blockData, blockData.getSize() - 2, 3);
+        assertSliceTypedDataBadArguments(blockData, blockData.getSize() - 1, 2);
+        assertSliceTypedDataBadArguments(blockData, blockData.getSize(), 1);
+    }
+
+    private static void assertSliceEmptyBehavior(BlockData blockData, int offset, int length) {
+        TypedData slice = blockData.slice(offset, length);
+        assertEquals(0, slice.getSize());
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.getInt(0));
+    }
+
+    private static void assertSliceNonEmptyBehavior(BlockData blockData, int offset, int length) {
+        TypedData slice = blockData.slice(offset, length);
+        assertEquals(length, slice.getSize());
+        for (int i = 0; i < length; i++) {
+            assertEquals(blockData.getByte(offset + i), slice.getByte(i));
+        }
+        assertThrows(IndexOutOfBoundsException.class, () -> slice.getInt(length));
+    }
+
+    private static void assertSliceTypedDataBadArguments(
+            BlockData blockData, int offset, int length) {
+        assertThrows(IllegalArgumentException.class, () -> blockData.slice(offset, length));
     }
 
     @Test
