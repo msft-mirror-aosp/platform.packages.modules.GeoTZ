@@ -30,7 +30,11 @@ public final class IntValueTypedPackedTable extends BaseTypedPackedTable<IntValu
         implements IntValueTable {
 
     public IntValueTypedPackedTable(BlockData blockData) {
-        super(blockData, Integer.SIZE);
+        this(blockData, false);
+    }
+
+    public IntValueTypedPackedTable(BlockData blockData, boolean useBigSharedData) {
+        super(blockData, Integer.SIZE, useBigSharedData);
         boolean signedValue = mTableReader.isValueSigned();
         if (mTableReader.getValueSizeBits() == Integer.SIZE && !signedValue) {
             throw new IllegalArgumentException(
