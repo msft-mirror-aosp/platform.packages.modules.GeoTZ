@@ -37,7 +37,12 @@ public final class TypedOutputStream implements Flushable, Closeable {
 
     /** Creates an instance, wrapping the supplied stream. */
     public TypedOutputStream(OutputStream out) {
-        mDataOutputStream = new DataOutputStream(new BufferedOutputStream(out, 8192));
+        this(out, /* bufferSize= */ 8192);
+    }
+
+    /** Creates an instance with specified buffer size, wrapping the supplied stream. */
+    public TypedOutputStream(OutputStream out, int bufferSize) {
+        mDataOutputStream = new DataOutputStream(new BufferedOutputStream(out, bufferSize));
     }
 
     /**
