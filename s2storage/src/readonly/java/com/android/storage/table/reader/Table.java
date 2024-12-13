@@ -16,6 +16,8 @@
 
 package com.android.storage.table.reader;
 
+import com.android.storage.block.read.TypedData;
+
 /**
  * A table containing entries with a signed, int key. A table can also have an array of shared data
  * that can be used, for example, to hold information shared by all entries in the table.
@@ -27,8 +29,20 @@ public interface Table<E extends Table.TableEntry> {
     /**
      * Returns the table's unstructured shared data that can be used, for example, to hold
      * information shared by all entries in the table.
+     *
+     * <p>See {@link #getSharedDataAsTyped()} for an alternative that consumes less memory for
+     * large shared data and provides type conversions.
      */
     byte[] getSharedData();
+
+    /**
+     * Returns the table's unstructured shared data that can be used, for example, to hold
+     * information shared by all entries in the table.
+     *
+     * <p>Unlike {@link #getSharedData()}, this method will not allocate a byte array, which
+     * can save memory if the shared data is large.
+     */
+    TypedData getSharedDataAsTyped();
 
     /**
      * Returns a table entry associated with the key, or {@code null} if there isn't one. If
