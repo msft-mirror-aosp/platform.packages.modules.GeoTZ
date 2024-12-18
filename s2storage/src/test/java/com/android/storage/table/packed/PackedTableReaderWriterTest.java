@@ -91,6 +91,8 @@ public class PackedTableReaderWriterTest {
         assertEquals(keyBits, tableReader.getKeySizeBits());
         assertEquals(signedValue, tableReader.isValueSigned());
         assertArrayEquals(sharedData, tableReader.getSharedData());
+        assertArrayEquals(
+                sharedData, tableReader.getSharedDataAsTyped().getBytes(0, sharedData.length));
         assertEquals((entrySizeBytes * Byte.SIZE) - keyBits, tableReader.getValueSizeBits());
         assertEquals(0, tableReader.getEntryCount());
     }
@@ -214,15 +216,23 @@ public class PackedTableReaderWriterTest {
 
     @Test
     public void getSharedData() throws IOException {
+        getSharedData(true);
+        getSharedData(false);
+    }
+
+    private void getSharedData(boolean useBigSharedData) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] sharedData = "Shared data".getBytes(StandardCharsets.UTF_8);
+        byte[] sharedData = createPopulatedByteArray(useBigSharedData ? 1500 : 100);
         boolean signedValue = false;
-        PackedTableWriter writer = PackedTableWriter.create(baos, 2, 4, signedValue, sharedData);
+        PackedTableWriter writer =
+                PackedTableWriter.create(baos, 2, 4, signedValue, sharedData, useBigSharedData);
         writer.close();
 
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
-        PackedTableReader tableReader = new PackedTableReader(blockData);
+        PackedTableReader tableReader = new PackedTableReader(blockData, useBigSharedData);
         assertArrayEquals(sharedData, tableReader.getSharedData());
+        assertArrayEquals(
+                sharedData, tableReader.getSharedDataAsTyped().getBytes(0, sharedData.length));
     }
 
     @Test
@@ -273,6 +283,7 @@ public class PackedTableReaderWriterTest {
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
         PackedTableReader tableReader = new PackedTableReader(blockData);
         assertArrayEquals(new byte[0], tableReader.getSharedData());
+        assertEquals(0, tableReader.getSharedDataAsTyped().getSize());
 
         assertNull(tableReader.getEntry(12));
     }
@@ -288,6 +299,7 @@ public class PackedTableReaderWriterTest {
         BlockData blockData = new BlockData(createByteBuffer(baos.toByteArray()));
         PackedTableReader tableReader = new PackedTableReader(blockData);
         assertArrayEquals(new byte[0], tableReader.getSharedData());
+        assertEquals(0, tableReader.getSharedDataAsTyped().getSize());
 
         int negativeKey = -1;
         assertThrows(IllegalArgumentException.class, () -> tableReader.getEntry(negativeKey));
@@ -540,5 +552,14 @@ public class PackedTableReaderWriterTest {
 
     private static ByteBuffer createByteBuffer(byte[] bytes) {
         return ByteBuffer.wrap(bytes).asReadOnlyBuffer();
+    }
+
+    private static byte[] createPopulatedByteArray(int size) {
+        byte[] byteArray = new byte[size];
+        char ch = 'A';
+        for (int i = 0; i < size; i++) {
+            byteArray[i] = (byte) (ch + (i % 27));
+        }
+        return byteArray;
     }
 }

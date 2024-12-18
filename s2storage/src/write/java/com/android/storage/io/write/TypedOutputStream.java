@@ -109,6 +109,14 @@ public final class TypedOutputStream implements Flushable, Closeable {
     }
 
     /**
+     * Writes a byte array as an integer (length) followed by the bytes.
+     */
+    public void writeByteArray(byte[] bytes) throws IOException {
+        writeInt(bytes.length);
+        mDataOutputStream.write(bytes);
+    }
+
+    /**
      * Writes a tiny (<= 255 entry) char array as an unsigned byte (length) followed by the chars.
      */
     public void writeTinyCharArray(char[] chars) throws IOException {
