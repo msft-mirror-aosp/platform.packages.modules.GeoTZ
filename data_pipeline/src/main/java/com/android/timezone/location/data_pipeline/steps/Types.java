@@ -117,7 +117,7 @@ public final class Types {
                 // Add the license text header.
                 writer.append(license.getTextProtoHeader());
 
-                TextFormat.print(message, writer);
+                TextFormat.printer().print(message, writer);
             }
         }
 

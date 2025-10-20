@@ -271,7 +271,7 @@ class Types {
 
     private static String toProtoText(Message proto) {
         try (StringWriter writer = new StringWriter()) {
-            TextFormat.print(proto, writer);
+            TextFormat.printer().print(proto, writer);
             return writer.getBuffer().toString();
         } catch (IOException e) {
             throw new IllegalStateException("This will never happen", e);
